@@ -87,6 +87,8 @@ td input{width:110px}
 .chk{display:flex;gap:8px;align-items:center;padding:4px 0}
 .chk.d span{text-decoration:line-through;color:var(--mute)}
 
+.warn{background:#fff3dc;color:#8a5a00;border:1px solid #f0d9a6;padding:9px 12px;border-radius:8px;margin-bottom:12px;cursor:pointer;font-size:13px}
+.warn[hidden]{display:none}
 .badge{font-size:12px;padding:6px 10px;border-radius:20px;background:var(--light);color:var(--blue);font-weight:600;align-self:center}
 .viewer .adm{display:none}
 .viewer .tc{cursor:pointer}
@@ -116,10 +118,12 @@ td input{width:110px}
   <header class="top">
     <h2 id="ttl"></h2>
     <div class="acts" id="acts"></div>
+    <input type="file" id="impx" accept=".xlsx,.xls,.csv" hidden onchange="importExcel(this)">
     <input type="file" id="imp" accept=".json" hidden onchange="importData(this)">
   </header>
 
   <!-- Search + filters (shown on Kanban and Tasks pages) -->
+  <div id="warn" class="warn" hidden onclick="syncBox()">⚠ Auto-save to the shared database is OFF – changes stay only on this device. Click here to connect (admin: put the URL in DEFAULT_SYNC inside the file).</div>
   <div id="filters" class="filters">
     <input id="q" placeholder="Search tasks..." oninput="applyF()">
     <select id="fst" onchange="applyF()"></select>
@@ -141,6 +145,7 @@ td input{width:110px}
 <!-- Add / Edit task popup -->
 <div id="modal" class="ov" hidden><div class="mod" id="mbody"></div></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 'use strict';
 /* =====================================================
@@ -195,13 +200,13 @@ const isOd = t => t.status !== 'done' && t.due && t.due < today();
 
 /* ---------- 3. Data (state) ---------- */
 function mk(o){ // build a task with defaults
-  return Object.assign({desc:'',as:'HR – L&D',status:'todo',progress:0,checklist:[],comments:[],att:'',
+  return Object.assign({mod:Date.now(), desc:'',as:'HR – L&D',status:'todo',progress:0,checklist:[],comments:[],att:'',
     history:[{t:'Task created',at:now()}]}, o);
 }
 function fresh(){
   const tasks = SEED.split('\n').map((l,i) => {
     const [title,c,due,p] = l.split('|');
-    return mk({id:'T-'+String(i+1).padStart(2,'0'), title, cat:CATS[c], due, pri:p});
+    return mk({id:'T-'+String(i+1).padStart(2,'0'), title, cat:CATS[c], due, pri:p, mod:0});
   });
   tasks[0].status = 'prog'; tasks[0].progress = 30;
   return {
@@ -226,9 +231,18 @@ function loadDB(){
           projects:[{id:'p1', name:'MPPL Employee Knowledge Hub', members:{}, data}]};
 }
 function persist(){ try { localStorage.setItem(KEY2, JSON.stringify(DB)); } catch(e){} }
-function save(){ DB.updated = Date.now(); persist(); }
+function save(){ DB.updated = Date.now(); persist(); dirty = true; clearTimeout(timer); timer = setTimeout(sync, 400); }
 let DB = loadDB(), S, user = null, admin = false, isAdm = false;
 // admin = can edit tasks (editor or admin) | isAdm = project admin | SA() = super admin
+// ===== ONE-TIME SETUP: paste your Firebase database URL between the quotes below, then upload this file to GitHub. =====
+// After that, everyone who opens the GitHub link loads the latest data and every change is saved automatically.
+const DEFAULT_SYNC = '';
+let SYNC = '', syncMsg = '⚪ Sync not connected', busy = false, timer = null, dirty = false, stale = false;
+try {
+  const m = location.hash.match(/sync=([^&]+)/);            // phone link: index.html#sync=<url>
+  if (m){ localStorage.setItem('mppl_sync', decodeURIComponent(m[1])); history.replaceState(null, '', location.pathname + location.search); }
+  SYNC = localStorage.getItem('mppl_sync') || DEFAULT_SYNC;
+} catch(e){ SYNC = DEFAULT_SYNC; }
 const P = () => DB.projects.find(p => p.id === DB.cur) || DB.projects[0];
 const SA = () => !!(user && user.sa);
 function setS(x){ S = x; P().data = x; }
@@ -248,7 +262,7 @@ let F = {};
 
 // Record an activity on a task (and in the global recent-activity list)
 function log(t, msg){
-  t.history.unshift({t:msg, at:now()});
+  t.history.unshift({t:msg, at:now()}); t.mod = Date.now();
   S.log.unshift({t:t.id+' · '+msg, at:now()});
   S.log.length = Math.min(S.log.length, 30);
 }
@@ -372,11 +386,13 @@ const PAGES = {
 /* ---------- Admin login (PIN) ---------- */
 function drawActs(){
   const role = isAdm ? 'Admin' : admin ? 'Editor' : 'Viewer';
-  $('#acts').innerHTML = `<span class="badge">${user ? esc(user.name) + ' · ' : ''}${role}</span>`
-    + (SA() ? `<button class="btn" onclick="exportData()">Export Data</button><button class="btn" onclick="$('#imp').click()">Import Data</button>` : '')
+  $('#acts').innerHTML = `<span class="badge" id="syncb" style="cursor:pointer" onclick="syncBox()">${esc(syncMsg)}</span><span class="badge">${user ? esc(user.name) + ' · ' : ''}${role}</span>`
+    + `<button class="btn" onclick="exportExcel()">Export Excel</button>`
+    + (isAdm ? `<button class="btn" onclick="$('#impx').click()">Import Excel</button>` : '')
+    + (SA() ? `<button class="btn" onclick="exportData()">Backup JSON</button><button class="btn" onclick="$('#imp').click()">Restore JSON</button>` : '')
     + (admin ? `<button class="btn pri" onclick="openT()">+ Add Task</button>` : '')
     + (user ? `<button class="btn" onclick="logout()">Logout</button>` : `<button class="btn pri" onclick="loginBox()">Login</button>`);
-  $('#pname').textContent = P().name;
+  $('#pname').textContent = P().name; $('#warn').hidden = !!SYNC;
   $('#psel').innerHTML = DB.projects.map(p => `<option value="${p.id}" ${p.id === DB.cur ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
 }
 function switchP(id){ DB.cur = id; persist(); attach(); setupFilters(); render(); }
@@ -393,11 +409,80 @@ function doLogin(){
 }
 function logout(){ user = null; try { sessionStorage.removeItem('mppl_user'); } catch(e){} roles(); render(); }
 
+/* ---------- Live sync between devices (Firebase Realtime Database) ---------- */
+function setSync(m, ok){ syncMsg = (ok === true ? '🟢 ' : ok === false ? '🔴 ' : '⚪ ') + m; const e = $('#syncb'); if (e) e.textContent = syncMsg; }
+const UPD = () => SYNC.replace(/\.json(\?.*)?$/, '/updated.json$1');   // tiny "last saved" value, cheap to check often
+async function getRemote(){
+  const r = await fetch(SYNC, {cache:'no-store'}); if (!r.ok) throw 0;
+  const j = await r.json(); return j && j.blob ? JSON.parse(j.blob) : null;
+}
+async function putDB(){
+  const r = await fetch(SYNC, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({updated:DB.updated || 0, blob:JSON.stringify(DB)})});
+  if (!r.ok) throw 0;
+}
+// Combine two copies so nobody's work is lost: for each task the most recent edit wins; deletions are remembered
+function mergeDB(a, b){
+  if ((a.epoch || 0) !== (b.epoch || 0)){ const w = JSON.parse(JSON.stringify((a.epoch || 0) > (b.epoch || 0) ? a : b)); w.cur = a.cur; return w; }   // after a JSON restore
+  const aNew = (a.updated || 0) >= (b.updated || 0), nw = aNew ? a : b, od = aNew ? b : a;
+  const out = JSON.parse(JSON.stringify(nw)), gp = Object.assign({}, od.goneP, nw.goneP);
+  od.projects.forEach(op => { if (!out.projects.find(p => p.id === op.id)) out.projects.push(JSON.parse(JSON.stringify(op))); });
+  out.projects = out.projects.filter(p => !gp[p.id]);
+  out.projects.forEach(p => {
+    const o = od.projects.find(x => x.id === p.id); if (!o) return;
+    const gone = Object.assign({}, o.data.gone, p.data.gone), map = {};
+    [...o.data.tasks, ...p.data.tasks].forEach(t => { if (!map[t.id] || (t.mod || 0) >= (map[t.id].mod || 0)) map[t.id] = t; });
+    p.data.tasks = Object.values(map).filter(t => !(gone[t.id] && gone[t.id] >= (t.mod || 0)))
+      .sort((x, y) => x.id.localeCompare(y.id, undefined, {numeric:true}));
+    p.data.gone = gone;
+  });
+  out.goneP = gp; out.cur = a.cur; return out;
+}
+function canApply(){ return $('#modal').hidden && !/INPUT|SELECT|TEXTAREA/.test((document.activeElement || {}).tagName || ''); }
+async function sync(){
+  if (!SYNC) return setSync('Not connected');
+  if (busy) return; busy = true;
+  try {
+    if (stale && canApply()){ stale = false; render(); }
+    const ru = await fetch(UPD(), {cache:'no-store'}); if (!ru.ok) throw 0;
+    const remote = await ru.json();
+    if (dirty || remote == null || (DB.updated || 0) > remote){        // this device has changes -> merge with the server copy, then save
+      setSync('Saving…');
+      const rd = remote == null ? null : await getRemote();
+      const m = rd ? mergeDB(DB, rd) : DB; m.updated = Date.now();
+      const changed = JSON.stringify(m.projects) !== JSON.stringify(DB.projects);
+      DB = m; persist(); await putDB(); dirty = false;
+      if (changed){ attach(); setupFilters(); if (canApply()) render(); else stale = true; }
+    } else if (remote > (DB.updated || 0)){                              // someone else saved -> load their changes
+      if (!canApply()){ busy = false; return; }
+      const rd = await getRemote();
+      if (rd){ const m = mergeDB(DB, rd); m.updated = Math.max(DB.updated || 0, rd.updated || 0);
+        dirty = JSON.stringify(m.projects) !== JSON.stringify(rd.projects); DB = m; persist(); attach(); setupFilters(); render(); }
+    }
+    setSync('All changes saved ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), true);
+  } catch(e){ setSync('Offline – will save when back online', false); }
+  busy = false;
+}
+function syncBox(){
+  $('#mbody').innerHTML = `<h3>Shared database (auto-save)</h3><p class="mute">Paste your Firebase Realtime Database URL (once per device, or use the phone link). Leave empty and save to disconnect.</p><input id="sy_u" placeholder="https://your-project-default-rtdb.firebaseio.com/" value="${esc(SYNC)}" style="width:100%"><p class="sm">Status: ${esc(syncMsg)}</p><div class="row"><button class="btn" onclick="copyLink()">Copy phone link</button><span><button class="btn" onclick="closeM()">Close</button> <button class="btn pri" onclick="saveSync()">Save &amp; Connect</button></span></div>`;
+  $('#modal').hidden = false;
+}
+function saveSync(){
+  let u = $('#sy_u').value.trim();
+  if (u){ u = u.replace(/\/+$/, ''); if (!/\.json(\?.*)?$/.test(u)) u += '/mppl.json'; }
+  SYNC = u; try { localStorage.setItem('mppl_sync', u); } catch(e){}
+  closeM(); setSync(u ? 'Connecting…' : 'Sync not connected'); drawActs(); if (u) sync();
+}
+function copyLink(){
+  if (!SYNC) return alert('Save the sync URL first.');
+  const l = location.href.split('#')[0] + '#sync=' + encodeURIComponent(SYNC);
+  (navigator.clipboard ? navigator.clipboard.writeText(l) : Promise.reject()).then(() => alert('Link copied. Open it on your phone.'), () => prompt('Copy this link:', l));
+}
+
 /* ---------- Users, roles and projects (Settings page) ---------- */
 function setRole(n, r){ if (!isAdm) return; P().members[n] = r; save(); }
 function addUser(){
   if (!SA()) return;
-  const n = $('#nu_n').value.trim().replace(/[^\w .-]/g, ''), p = $('#nu_p').value;
+  const n = $('#nu_n').value.trim().replace(/[^\w -]/g, ''), p = $('#nu_p').value;
   if (!n || p.length < 4) return alert('Enter a name and a PIN of at least 4 characters.');
   if (DB.users.some(u => u.name.toLowerCase() === n.toLowerCase())) return alert('User already exists.');
   DB.users.push({name:n, pin:hs(p), sa:$('#nu_sa').checked}); save(); render();
@@ -423,8 +508,94 @@ function delProject(){
   if (!SA()) return;
   if (DB.projects.length < 2) return alert('At least one project must remain.');
   if (!confirm('Delete project "' + P().name + '" and all its tasks?')) return;
-  DB.projects = DB.projects.filter(p => p.id !== DB.cur); DB.cur = DB.projects[0].id;
+  (DB.goneP = DB.goneP || {})[DB.cur] = Date.now(); DB.projects = DB.projects.filter(p => p.id !== DB.cur); DB.cur = DB.projects[0].id;
   save(); attach(); setupFilters(); render();
+}
+
+/* ---------- Excel import / export (SheetJS library) ---------- */
+const nk = s => String(s).toLowerCase().replace(/[^a-z0-9]/g, '');           // "Progress %" -> "progress"
+const pick = (row, names) => { for (const k in row) if (names.includes(nk(k))) return row[k]; return ''; };
+const iso = d => new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10);
+const STMAP = {todo:'todo', notstarted:'todo', inprogress:'prog', prog:'prog', wip:'prog', review:'review', inreview:'review', done:'done', completed:'done', complete:'done'};
+const PRMAP = {high:'H', h:'H', medium:'M', med:'M', m:'M', low:'L', l:'L'};
+function xDate(v){   // Excel date number, Date object or text -> YYYY-MM-DD
+  if (v === '' || v == null) return '';
+  if (typeof v === 'number') return new Date(Math.round((v - 25569) * 864e5)).toISOString().slice(0, 10);
+  if (v instanceof Date) return iso(v);
+  const s = String(v).trim(); let m;
+  if ((m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/))) return m[1] + '-' + m[2].padStart(2, '0') + '-' + m[3].padStart(2, '0');
+  if ((m = s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/))) return m[3] + '-' + m[2].padStart(2, '0') + '-' + m[1].padStart(2, '0');   // dd/mm/yyyy
+  const d = new Date(s); return isNaN(d) ? '' : iso(d);
+}
+function parseSheets(rows, brows, prows){   // turns sheet rows into tasks, budget and project details
+  const bad = [], used = new Set(), tasks = [], explicit = new Set();
+  rows.forEach(r => { const x = String(pick(r, ['taskid', 'id'])).trim(); if (x) explicit.add(x); });
+  let next = 1;
+  const newId = () => { let id; do { id = 'T-' + String(next++).padStart(2, '0'); } while (used.has(id) || explicit.has(id)); return id; };
+  rows.forEach((row, i) => {
+    const title = String(pick(row, ['taskname', 'task', 'title', 'name'])).trim(); if (!title) return;
+    let id = String(pick(row, ['taskid', 'id'])).trim();
+    if (!id || used.has(id)) id = newId();
+    used.add(id);
+    const cr = String(pick(row, ['category', 'cat'])).trim();
+    let cat = CATS.find(c => nk(c) === nk(cr));
+    if (!cat){ cat = CATS[0]; bad.push(`Row ${i + 2}: category "${cr}" not recognised, set to ${cat}`); }
+    const status = STMAP[nk(pick(row, ['status']))] || 'todo';
+    let pg = pick(row, ['progress']); pg = typeof pg === 'string' ? parseFloat(pg) : +pg; if (isNaN(pg)) pg = 0;
+    if (pg > 0 && pg <= 1) pg *= 100;                 // 0.4 (a % cell) -> 40
+    pg = status === 'done' ? 100 : Math.max(0, Math.min(100, Math.round(pg)));
+    const checklist = String(pick(row, ['checklist', 'checklistitems'])).split(/[;\n]/).map(s => s.trim()).filter(Boolean)
+      .map(s => ({t:s.replace(/^\[(x|✓| )\]\s*/i, ''), d:/^\[(x|✓)\]/i.test(s)}));
+    tasks.push(mk({id, title, desc:String(pick(row, ['description', 'desc'])).trim(), cat,
+      as:String(pick(row, ['assignee', 'assignedto'])).trim() || 'Unassigned',
+      pri:PRMAP[nk(pick(row, ['priority']))] || 'M', due:xDate(pick(row, ['duedate', 'due', 'deadline'])),
+      status, progress:pg, checklist, att:String(pick(row, ['attachment', 'attachments'])).trim(),
+      history:[{t:'Imported from Excel', at:now()}]}));
+  });
+  const nm = r => String(pick(r, ['category', 'name'])).trim();
+  const budget = brows.filter(r => nm(r) && (pick(r, ['estimated', 'est']) !== '' || pick(r, ['actual', 'act']) !== ''))
+    .map(r => ({name:nm(r), est:Math.max(0, +pick(r, ['estimated', 'est']) || 0), act:Math.max(0, +pick(r, ['actual', 'act']) || 0)}));
+  const proj = {}; prows.forEach(r => { const k = nk(pick(r, ['field', 'key'])), v = pick(r, ['value']); if (k && v !== '') proj[k] = v; });
+  return {tasks, budget, proj, bad};
+}
+function importExcel(inp){
+  if (!isAdm) return;
+  const f = inp.files[0]; if (!f) return;
+  if (typeof XLSX === 'undefined'){ inp.value = ''; return alert('The Excel library could not load. Check your internet connection and reload the page.'); }
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const wb = XLSX.read(r.result, {type:'array'});
+      const rowsOf = n => { const k = wb.SheetNames.find(s => nk(s) === n); return k ? XLSX.utils.sheet_to_json(wb.Sheets[k], {defval:''}) : null; };
+      const rows = rowsOf('tasks'); if (!rows) throw new Error('No sheet named "Tasks" found.');
+      const res = parseSheets(rows, rowsOf('budget') || [], rowsOf('project') || []);
+      if (!res.tasks.length) throw new Error('No tasks found. Check the header row (Task Name, Category, ...).');
+      const warn = res.bad.length ? '\n\nWarnings:\n' + res.bad.slice(0, 8).join('\n') : '';
+      if (!confirm('Import ' + res.tasks.length + ' tasks? This REPLACES all tasks in "' + P().name + '".' + warn)) { inp.value = ''; return; }
+      const ts = Date.now(); S.gone = S.gone || {}; S.tasks.forEach(t => S.gone[t.id] = ts); res.tasks.forEach(t => t.mod = ts + 1);
+      S.tasks = res.tasks;
+      if (res.budget.length) S.budget = res.budget;
+      const J = S.proj, p = res.proj;
+      if (p.owner) J.owner = String(p.owner); if (p.target) J.target = String(p.target);
+      if (p.budget !== undefined) J.budget = +p.budget || J.budget;
+      if (p.location) J.location = String(p.location); if (p.capacity) J.capacity = String(p.capacity);
+      res.tasks.forEach(t => { if (!S.people.includes(t.as)) S.people.push(t.as); });
+      S.log.unshift({t:'Imported ' + res.tasks.length + ' tasks from Excel', at:now()});
+      save(); setupFilters(); render(); alert('Imported ' + res.tasks.length + ' tasks.');
+    } catch(e){ alert('Import failed: ' + (e.message || 'invalid file') + '\n\nUse the MPPL Excel template.'); }
+    inp.value = '';
+  };
+  r.readAsArrayBuffer(f);
+}
+function exportExcel(){
+  if (typeof XLSX === 'undefined') return alert('The Excel library could not load. Check your internet connection and reload the page.');
+  const wb = XLSX.utils.book_new(), J = S.proj;
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(S.tasks.map(t => ({'Task ID':t.id, 'Task Name':t.title, 'Description':t.desc, 'Category':t.cat,
+    'Assignee':t.as, 'Priority':PR[t.pri], 'Due Date':t.due, 'Status':ST[t.status], 'Progress %':t.progress,
+    'Checklist':t.checklist.map(c => (c.d ? '[x] ' : '') + c.t).join('; '), 'Attachment':t.att}))), 'Tasks');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(S.budget.map(b => ({'Category':b.name, 'Estimated':b.est, 'Actual':b.act}))), 'Budget');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['Field', 'Value'], ['Owner', J.owner], ['Target', J.target], ['Budget', J.budget], ['Location', J.location], ['Capacity', J.capacity]]), 'Project');
+  XLSX.writeFile(wb, (P().name.replace(/[^\w -]/g, '') || 'project') + '.xlsx');
 }
 
 /* ---------- 7. Rendering & navigation ---------- */
@@ -502,6 +673,7 @@ function saveT(){ if (!admin) return;
   const n = Object.assign(cur, {title:v('f_title').trim(), desc:v('f_desc'), cat:v('f_cat'), as:v('f_as').trim() || 'Unassigned',
     pri:v('f_pr'), due:v('f_due'), status:v('f_st'), progress:+v('f_pg'), att:v('f_att')});
   if (n.status === 'done') n.progress = 100;
+  n.mod = Date.now();
   if (!orig){
     n.history = [{t:'Task created', at:now()}];
     S.tasks.push(n);
@@ -513,13 +685,14 @@ function saveT(){ if (!admin) return;
     if (orig.due !== n.due) log(n, 'Due date updated');
     if (orig.progress !== n.progress) log(n, 'Progress updated to ' + n.progress + '%');
     if (n.comments.length > orig.comments.length) log(n, 'Comment added');
-    S.tasks[S.tasks.indexOf(orig)] = n;
+    { const ix = S.tasks.findIndex(t => t.id === orig.id); if (ix >= 0) S.tasks[ix] = n; else S.tasks.push(n); }
   }
   save(); closeM(); setupFilters(); render();
 }
 function delT(){ if (!isAdm) return;
   if (!confirm('Delete ' + orig.id + '?')) return;
-  S.tasks.splice(S.tasks.indexOf(orig), 1);
+  (S.gone = S.gone || {})[orig.id] = Date.now();                       // remember the deletion so it spreads to other devices
+  { const ix = S.tasks.findIndex(t => t.id === orig.id); if (ix >= 0) S.tasks.splice(ix, 1); }
   S.log.unshift({t:orig.id+' · Task deleted', at:now()});
   save(); closeM(); render();
 }
@@ -533,7 +706,7 @@ function saveSettings(){ if (!isAdm) return;
   P().name = $('#s_name').value.trim() || P().name;
   save(); setupFilters(); render(); alert('Settings saved.');
 }
-function resetAll(){ if (!isAdm) return; if (confirm('Reset everything to the starting 26 tasks?')){ setS(fresh()); save(); setupFilters(); render(); } }
+function resetAll(){ if (!isAdm) return; if (confirm('Reset everything to the starting 26 tasks?')){ { const g = {}, ts = Date.now(); S.tasks.forEach(t => g[t.id] = ts); const d = fresh(); d.gone = g; d.tasks.forEach(t => t.mod = ts + 1); setS(d); } save(); setupFilters(); render(); } }
 function exportData(){ if (!SA()) return;
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([JSON.stringify(DB, null, 2)], {type:'application/json'}));
@@ -546,7 +719,7 @@ function importData(inp){ if (!SA()) return;
   r.onload = () => {
     try {
       const d = JSON.parse(r.result);
-      if (d.projects && d.users){ DB = d; attach(); }
+      if (d.projects && d.users){ const ep = Math.max(DB.epoch || 0, d.epoch || 0) + 1; DB = d; DB.epoch = ep; attach(); }
       else if (Array.isArray(d.tasks) && Array.isArray(d.budget)) setS(Object.assign(fresh(), d));
       else throw 0;
       save(); setupFilters(); render(); alert('Data imported.');
@@ -560,12 +733,15 @@ $('#modal').addEventListener('click', e => { if (e.target.id === 'modal') closeM
 /* ---------- 11. Start ---------- */
 async function boot(){
   try {   // when hosted online, use the newest data.json published next to this page
-    if (location.protocol.indexOf('http') === 0){
+    if (!SYNC && location.protocol.indexOf('http') === 0){
       const r = await fetch('data.json?t=' + Date.now());
       if (r.ok){ const d = await r.json(); if (d.projects && d.users && (d.updated || 0) > (DB.updated || 0)){ DB = d; persist(); } }
     }
   } catch(e){}
   attach(); setupFilters(); render();
+  sync(); setInterval(() => { if (!document.hidden) sync(); }, 3000);   // check for changes every 3 seconds
+  window.addEventListener('focus', sync);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) sync(); });
 }
 boot();
 
