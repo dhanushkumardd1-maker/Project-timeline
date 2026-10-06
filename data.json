@@ -1,0 +1,728 @@
+{
+  "users": [
+    {
+      "name": "admin",
+      "pin": "1748nnhtwyz",
+      "sa": true
+    }
+  ],
+  "cur": "p1",
+  "updated": 1791283817076,
+  "projects": [
+    {
+      "id": "p1",
+      "name": "MPPL Employee Knowledge Hub",
+      "members": {},
+      "data": {
+        "tasks": [
+          {
+            "desc": "",
+            "as": "HR – L&D",
+            "status": "done",
+            "progress": 100,
+            "checklist": [],
+            "comments": [],
+            "att": "",
+            "history": [
+              {
+                "t": "Status changed to Done",
+                "at": "06 Oct, 04:02 pm"
+              },
+              {
+                "t": "Task created",
+                "at": "06 Oct, 04:01 pm"
+              }
+            ],
+            "id": "T-01",
+            "title": "Get room confirmation from Admin",
+            "cat": "Planning & Approval",
+            "due": "2026-10-08",
+            "pri": "H"
+          },
+          {
+            "desc": "",
+            "as": "HR – L&D",
+            "status": "done",
+            "progress": 100,
+            "checklist": [],
+            "comments": [],
+            "att": "",
+            "history": [
+              {
+                "t": "Status changed to Done",
+                "at": "06 Oct, 04:02 pm"
+              },
+              {
+                "t": "Task created",
+                "at": "06 Oct, 04:01 pm"
+              }
+            ],
+            "id": "T-02",
+            "title": "Finalize library layout",
+            "cat": "Planning & Approval",
+            "due": "2026-10-09",
+            "pri": "M"
+          },
+          {
+            "desc": "",
+            "as": "HR – L&D",
+            "status": "done",
+            "progress": 100,
+            "checklist": [],
+            "comments": [],
+            "att": "",
+            "history": [
+              {
+                "t": "Status changed to Done",
+                "at": "06 Oct, 04:02 pm"
+              },
+              {
+                "t": "Task created",
+                "at": "06 Oct, 04:01 pm"
+              }
+            ],
+            "id": "T-03",
+            "title": "Finalize furniture requirement",
+            "cat": "Planning & Approval",
+            "due": "2026-10-09",
+            "pri": "M"
+          },
+          {
+            "desc": "",
+            "as": "HR – L&D",
+            "status": "done",
+            "progress": 100,
+            "checklist": [],
+            "comments": [],
+            "att": "",
+            "history": [
+              {
+                "t": "Status changed to Done",
+                "at": "06 Oct, 04:02 pm"
+              },
+              {
+                "t": "Task created",
+                "at": "06 Oct, 04:01 pm"
+              }
+            ],
+            "id": "T-04",
+            "title": "Confirm project budget",
+            "cat": "Planning & Approval",
+            "due": "2026-10-09",
+            "pri": "H"
+          },
+          {
+            "desc": "",
+            "as": "HR – L&D",
+            "status": "done",
+            "progress": 100,
+            "checklist": [],
+            "comments": [],
+            "att": "",
+            "history": [
+              {
+                "t": "Status changed to Done",
+                "at": "06 Oct, 04:08 pm"
+              },
+              {
+                "t": "Status changed to In Progress",
+                "at": "06 Oct, 04:08 pm"
+              },
+              {
+                "t": "Task created",
+                "at": "06 Oct, 04:01 pm"
+              }
+            ],
+            "id": "T-05",
+            "title": "Get quotation for tables and chairs",
+            "cat": "Infrastructure",
+            "due": "2026-10-12",
+            "pri": "M"
+          },
+          {
+            "desc": "",
+            "as": "HR – L&D",
+            "status": "done",
+            "progress": 100,
+            "checklist": [],
+            "comments": [],
+            "att": "",
+            "history": [
+              {
+                "t": "Status changed to Done",
+                "at": "06 Oct, 04:08 pm"
+              },
+              {
+                "t": "Status changed to Review",
+                "at": "06 Oct, 04:08 pm"
+              },
+              {
+                "t": "Status changed to In Progress",
+                "at": "06 Oct, 04:08 pm"
+              },
+              {
+                "t": "Task created",
+                "at": "06 Oct, 04:01 pm"
+              }
+            ],
+            "id": "T-06",
+            "title": "Get quotation for book rack",
+            "cat": "Infrastructure",
+            "due": "2026-10-12",
+            "pri": "M"
+          },
+          {
+            "desc": "",
+            "as": "HR – L&D",
+            "status": "done",
+            "progress": 100,
+            "checklist": [],
+            "comments": [],
+            "att": "",
+            "history": [
+              {
+                "t": "Status changed to Done",
+                "at": "06 Oct, 04:08 pm"
+              },
+              {
+                "t": "Status changed to In Progress",
+                "at": "06 Oct, 04:08 pm"
+              },
+              {
+                "t": "Task created",
+                "at": "06 Oct, 04:01 pm"
+              }
+            ],
+            "id": "T-07",
+            "title": "Finalize name board",
+            "cat": "Infrastructure",
+            "due": "2026-10-14",
+            "pri": "L"
+          },
+          {
+            "desc": "",
+            "as": "HR – L&D",
+            "status": "done",
+            "progress": 100,
+            "checklist": [],
+            "comments": [],
+            "att": "",
+            "history": [
+              {
+                "t": "Status changed to Done",
+                "at": "06 Oct, 04:08 pm"
+              },
+              {
+                "t": "Status changed to In Progress",
+                "at": "06 Oct, 04:08 pm"
+              },
+              {
+                "t": "Task created",
+                "at": "06 Oct, 04:01 pm"
+              }
+            ],
+            "id": "T-08",
+            "title": "Complete room setup",
+            "cat": "Infrastructure",
+            "due": "2026-10-23",
+            "pri": "H"
+          },
+          {
+            "desc": "",
+            "as": "HR – L&D",
+            "status": "done",
+            "progress": 100,
+            "checklist": [],
+            "comments": [],
+            "att": "",
+            "history": [
+              {
+                "t": "Status changed to Done",
+                "at": "06 Oct, 04:08 pm"
+              },
+              {
+                "t": "Status changed to In Progress",
+                "at": "06 Oct, 04:08 pm"
+              },
+              {
+                "t": "Task created",
+                "at": "06 Oct, 04:01 pm"
+              }
+            ],
+            "id": "T-09",
+            "title": "Finalize book list",
+            "cat": "Book Procurement",
+            "due": "2026-10-08",
+            "pri": "H"
+          },
+          {
+            "desc": "",
+            "as": "HR – L&D",
+            "status": "done",
+            "progress": 100,
+            "checklist": [],
+            "comments": [],
+            "att": "",
+            "history": [
+              {
+                "t": "Status changed to Done",
+                "at": "06 Oct, 04:08 pm"
+              },
+              {
+                "t": "Status changed to In Progress",
+                "at": "06 Oct, 04:08 pm"
+              },
+              {
+                "t": "Task created",
+                "at": "06 Oct, 04:01 pm"
+              }
+            ],
+            "id": "T-10",
+            "title": "Verify ISBN and publisher details",
+            "cat": "Book Procurement",
+            "due": "2026-10-10",
+            "pri": "M"
+          },
+          {
+            "desc": "",
+            "as": "HR – L&D",
+            "status": "todo",
+            "progress": 0,
+            "checklist": [],
+            "comments": [],
+            "att": "",
+            "history": [
+              {
+                "t": "Task created",
+                "at": "06 Oct, 04:01 pm"
+              }
+            ],
+            "id": "T-11",
+            "title": "Send book list to vendor",
+            "cat": "Book Procurement",
+            "due": "2026-10-12",
+            "pri": "M"
+          },
+          {
+            "desc": "",
+            "as": "HR – L&D",
+            "status": "todo",
+            "progress": 0,
+            "checklist": [],
+            "comments": [],
+            "att": "",
+            "history": [
+              {
+                "t": "Task created",
+                "at": "06 Oct, 04:01 pm"
+              }
+            ],
+            "id": "T-12",
+            "title": "Get vendor quotation",
+            "cat": "Book Procurement",
+            "due": "2026-10-15",
+            "pri": "M"
+          },
+          {
+            "desc": "",
+            "as": "HR – L&D",
+            "status": "todo",
+            "progress": 0,
+            "checklist": [],
+            "comments": [],
+            "att": "",
+            "history": [
+              {
+                "t": "Task created",
+                "at": "06 Oct, 04:01 pm"
+              }
+            ],
+            "id": "T-13",
+            "title": "Compare quotations",
+            "cat": "Book Procurement",
+            "due": "2026-10-16",
+            "pri": "M"
+          },
+          {
+            "desc": "",
+            "as": "HR – L&D",
+            "status": "todo",
+            "progress": 0,
+            "checklist": [],
+            "comments": [],
+            "att": "",
+            "history": [
+              {
+                "t": "Task created",
+                "at": "06 Oct, 04:01 pm"
+              }
+            ],
+            "id": "T-14",
+            "title": "Obtain purchase approval",
+            "cat": "Book Procurement",
+            "due": "2026-10-17",
+            "pri": "H"
+          },
+          {
+            "desc": "",
+            "as": "HR – L&D",
+            "status": "todo",
+            "progress": 0,
+            "checklist": [],
+            "comments": [],
+            "att": "",
+            "history": [
+              {
+                "t": "Task created",
+                "at": "06 Oct, 04:01 pm"
+              }
+            ],
+            "id": "T-15",
+            "title": "Purchase books",
+            "cat": "Book Procurement",
+            "due": "2026-10-20",
+            "pri": "H"
+          },
+          {
+            "desc": "",
+            "as": "HR – L&D",
+            "status": "todo",
+            "progress": 0,
+            "checklist": [],
+            "comments": [],
+            "att": "",
+            "history": [
+              {
+                "t": "Task created",
+                "at": "06 Oct, 04:01 pm"
+              }
+            ],
+            "id": "T-16",
+            "title": "Receive and verify books",
+            "cat": "Book Procurement",
+            "due": "2026-10-24",
+            "pri": "H"
+          },
+          {
+            "desc": "",
+            "as": "HR – L&D",
+            "status": "todo",
+            "progress": 0,
+            "checklist": [],
+            "comments": [],
+            "att": "",
+            "history": [
+              {
+                "t": "Task created",
+                "at": "06 Oct, 04:01 pm"
+              }
+            ],
+            "id": "T-17",
+            "title": "Arrange furniture",
+            "cat": "Library Setup",
+            "due": "2026-10-25",
+            "pri": "M"
+          },
+          {
+            "desc": "",
+            "as": "HR – L&D",
+            "status": "todo",
+            "progress": 0,
+            "checklist": [],
+            "comments": [],
+            "att": "",
+            "history": [
+              {
+                "t": "Task created",
+                "at": "06 Oct, 04:01 pm"
+              }
+            ],
+            "id": "T-18",
+            "title": "Arrange books category-wise",
+            "cat": "Library Setup",
+            "due": "2026-10-26",
+            "pri": "M"
+          },
+          {
+            "desc": "",
+            "as": "HR – L&D",
+            "status": "todo",
+            "progress": 0,
+            "checklist": [],
+            "comments": [],
+            "att": "",
+            "history": [
+              {
+                "t": "Task created",
+                "at": "06 Oct, 04:01 pm"
+              }
+            ],
+            "id": "T-19",
+            "title": "Prepare library rules",
+            "cat": "Library Setup",
+            "due": "2026-10-22",
+            "pri": "L"
+          },
+          {
+            "desc": "",
+            "as": "HR – L&D",
+            "status": "todo",
+            "progress": 0,
+            "checklist": [],
+            "comments": [],
+            "att": "",
+            "history": [
+              {
+                "t": "Task created",
+                "at": "06 Oct, 04:01 pm"
+              }
+            ],
+            "id": "T-20",
+            "title": "Prepare book issue/return process",
+            "cat": "Library Setup",
+            "due": "2026-10-22",
+            "pri": "M"
+          },
+          {
+            "desc": "",
+            "as": "HR – L&D",
+            "status": "todo",
+            "progress": 0,
+            "checklist": [],
+            "comments": [],
+            "att": "",
+            "history": [
+              {
+                "t": "Task created",
+                "at": "06 Oct, 04:01 pm"
+              }
+            ],
+            "id": "T-21",
+            "title": "Display library guidelines",
+            "cat": "Library Setup",
+            "due": "2026-10-27",
+            "pri": "L"
+          },
+          {
+            "desc": "",
+            "as": "HR – L&D",
+            "status": "todo",
+            "progress": 0,
+            "checklist": [],
+            "comments": [],
+            "att": "",
+            "history": [
+              {
+                "t": "Task created",
+                "at": "06 Oct, 04:01 pm"
+              }
+            ],
+            "id": "T-22",
+            "title": "Prepare awareness poster",
+            "cat": "Employee Awareness",
+            "due": "2026-10-26",
+            "pri": "M"
+          },
+          {
+            "desc": "",
+            "as": "HR – L&D",
+            "status": "todo",
+            "progress": 0,
+            "checklist": [],
+            "comments": [],
+            "att": "",
+            "history": [
+              {
+                "t": "Task created",
+                "at": "06 Oct, 04:01 pm"
+              }
+            ],
+            "id": "T-23",
+            "title": "Prepare employee communication",
+            "cat": "Employee Awareness",
+            "due": "2026-10-26",
+            "pri": "M"
+          },
+          {
+            "desc": "",
+            "as": "HR – L&D",
+            "status": "todo",
+            "progress": 0,
+            "checklist": [],
+            "comments": [],
+            "att": "",
+            "history": [
+              {
+                "t": "Task created",
+                "at": "06 Oct, 04:01 pm"
+              }
+            ],
+            "id": "T-24",
+            "title": "Plan library inauguration",
+            "cat": "Launch",
+            "due": "2026-10-28",
+            "pri": "M"
+          },
+          {
+            "desc": "",
+            "as": "HR – L&D",
+            "status": "todo",
+            "progress": 0,
+            "checklist": [],
+            "comments": [],
+            "att": "",
+            "history": [
+              {
+                "t": "Task created",
+                "at": "06 Oct, 04:01 pm"
+              }
+            ],
+            "id": "T-25",
+            "title": "Launch Employee Knowledge Hub",
+            "cat": "Launch",
+            "due": "2026-10-30",
+            "pri": "H"
+          },
+          {
+            "desc": "",
+            "as": "HR – L&D",
+            "status": "todo",
+            "progress": 0,
+            "checklist": [],
+            "comments": [],
+            "att": "",
+            "history": [
+              {
+                "t": "Task created",
+                "at": "06 Oct, 04:01 pm"
+              }
+            ],
+            "id": "T-26",
+            "title": "Collect employee feedback",
+            "cat": "Launch",
+            "due": "2026-10-31",
+            "pri": "L"
+          }
+        ],
+        "log": [
+          {
+            "t": "T-27 · Task deleted",
+            "at": "06 Oct, 04:09 pm"
+          },
+          {
+            "t": "T-27 · Task created",
+            "at": "06 Oct, 04:09 pm"
+          },
+          {
+            "t": "T-06 · Status changed to Done",
+            "at": "06 Oct, 04:08 pm"
+          },
+          {
+            "t": "T-10 · Status changed to Done",
+            "at": "06 Oct, 04:08 pm"
+          },
+          {
+            "t": "T-09 · Status changed to Done",
+            "at": "06 Oct, 04:08 pm"
+          },
+          {
+            "t": "T-08 · Status changed to Done",
+            "at": "06 Oct, 04:08 pm"
+          },
+          {
+            "t": "T-07 · Status changed to Done",
+            "at": "06 Oct, 04:08 pm"
+          },
+          {
+            "t": "T-06 · Status changed to Review",
+            "at": "06 Oct, 04:08 pm"
+          },
+          {
+            "t": "T-05 · Status changed to Done",
+            "at": "06 Oct, 04:08 pm"
+          },
+          {
+            "t": "T-10 · Status changed to In Progress",
+            "at": "06 Oct, 04:08 pm"
+          },
+          {
+            "t": "T-09 · Status changed to In Progress",
+            "at": "06 Oct, 04:08 pm"
+          },
+          {
+            "t": "T-08 · Status changed to In Progress",
+            "at": "06 Oct, 04:08 pm"
+          },
+          {
+            "t": "T-07 · Status changed to In Progress",
+            "at": "06 Oct, 04:08 pm"
+          },
+          {
+            "t": "T-06 · Status changed to In Progress",
+            "at": "06 Oct, 04:08 pm"
+          },
+          {
+            "t": "T-05 · Status changed to In Progress",
+            "at": "06 Oct, 04:08 pm"
+          },
+          {
+            "t": "T-04 · Status changed to Done",
+            "at": "06 Oct, 04:02 pm"
+          },
+          {
+            "t": "T-01 · Status changed to Done",
+            "at": "06 Oct, 04:02 pm"
+          },
+          {
+            "t": "T-03 · Status changed to Done",
+            "at": "06 Oct, 04:02 pm"
+          },
+          {
+            "t": "T-02 · Status changed to Done",
+            "at": "06 Oct, 04:02 pm"
+          }
+        ],
+        "people": [
+          "HR – L&D",
+          "Admin",
+          "Procurement",
+          "Finance"
+        ],
+        "proj": {
+          "owner": "HR – L&D",
+          "target": "October 2026",
+          "budget": 50000,
+          "location": "Admin Area near Conference Room",
+          "capacity": "4 Employees"
+        },
+        "budget": [
+          {
+            "name": "Tables & Chairs",
+            "est": 0,
+            "act": 0
+          },
+          {
+            "name": "Book Rack",
+            "est": 0,
+            "act": 0
+          },
+          {
+            "name": "Books",
+            "est": 0,
+            "act": 0
+          },
+          {
+            "name": "Name Board",
+            "est": 0,
+            "act": 0
+          },
+          {
+            "name": "Other",
+            "est": 0,
+            "act": 0
+          }
+        ]
+      }
+    }
+  ]
+}
