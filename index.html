@@ -62,7 +62,7 @@ const SYNC='https://script.google.com/macros/s/AKfycbxftosmKzGEZPWhKoAaFbK2AniAH
 async function api(m,b){const r=await fetch(m==='GET'?SYNC+'?'+new URLSearchParams(b):SYNC,m==='GET'?{}:{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(b)});return r.json()}
 function akey(){let k=sessionStorage.getItem('mp_k');if(!k){k=prompt('Enter Admin Sync Key');if(k)sessionStorage.setItem('mp_k',k)}return k}
 async function pullProg(){if(!SYNC||!S.u||USERS[S.u]?.role==='admin')return;
- try{const r=await api('GET',{a:'prog',u:S.u});if(r&&r.done){const a=P(),l=a[S.u]||{done:{}},m={...l,...r};m.done={...r.done,...l.done};m.watch={...(r.watch||{}),...(l.watch||{})};
+ try{const r=await api('GET',{a:'prog',u:S.u});if(r&&r.done){const a=P(),l=a[S.u]||{done:{}};if((r.retrain||0)>(l.retrain||0)){a[S.u]=r;localStorage.setItem('mp_prog',JSON.stringify(a));return}const m={...l,...r};m.history=r.history||l.history;m.done={...r.done,...l.done};m.watch={...(r.watch||{}),...(l.watch||{})};
   const t={};[...(l.tries||[]),...(r.tries||[])].forEach(x=>t[x.date]=x);m.tries=Object.values(t);m.cert=l.cert||r.cert;a[S.u]=m;localStorage.setItem('mp_prog',JSON.stringify(a))}}catch(e){}}
 let pt;function pushProg(){if(!SYNC||!S.u||USERS[S.u]?.role==='admin')return;clearTimeout(pt);pt=setTimeout(()=>api('POST',{a:'prog',u:S.u,d:P()[S.u]}).catch(()=>toast('Offline – progress will sync next time')),500)}
 async function pullAll(){if(!SYNC)return;const k=akey();if(!k)return;try{const r=await api('GET',{a:'all',key:k});if(r.error){sessionStorage.removeItem('mp_k');return toast('Wrong sync key')}S.all=r}catch(e){toast('Could not reach server')}}
@@ -186,10 +186,10 @@ function adminV(u){if(!S.d)S.d=JSON.parse(JSON.stringify(C()));const D=S.d;let b
 function dashV(){const us=U(),pr=S.all||P();let rows='',done=0,prog=0,none=0;
  Object.entries(us).filter(([k,v])=>v.role!=='admin').forEach(([id,v])=>{const s=stat(id,pr),ce=pr[id]?.cert,b=Math.max(0,...(pr[id]?.tries||[]).map(t=>t.score));
   if(ce)done++;else if(s.n)prog++;else none++;
-  rows+=`<tr><td>${esc(id)}</td><td>${esc(v.name)}</td><td>${s.n}/${s.t}</td><td>${pr[id]?.tries?.length?b+'%':'–'}</td><td><span class="tag ${ce?'t1':s.n?'t2':'t3'}">${ce?'Certified':s.n?'In progress':'Not started'}</span></td><td>${ce?new Date(ce.date).toLocaleDateString():'–'}</td>
-  <td><button class="btn s sm" onclick="resetPr('${esc(id)}')">Reset progress</button></td></tr>`});
+  rows+=`<tr><td>${esc(id)}</td><td>${esc(v.name)}</td><td>${s.n}/${s.t}</td><td>${pr[id]?.tries?.length?b+'%':'–'}</td><td><span class="tag ${ce?'t1':s.n?'t2':'t3'}">${ce?'Certified':s.n?'In progress':'Not started'}</span>${pr[id]?.history?.length?`<br><small class="mu">Previous completions: ${pr[id].history.length}</small>`:''}</td><td>${ce?new Date(ce.date).toLocaleDateString():'–'}</td>
+  <td><button class="btn s sm" data-id="${esc(id)}" onclick="retrain([this.dataset.id])">Retrain</button></td></tr>`});
  return `${SYNC?'':'<p class="err">⚠ Sync is not configured – progress is saved only in each device\'s own browser. See setup steps.</p>'}<div class="cards" style="margin-top:0"><div class="card"><b>${done+prog+none}</b>Total learners</div><div class="card"><b style="color:var(--ok)">${done}</b>Completed &amp; certified</div><div class="card"><b>${prog}</b>In progress</div><div class="card"><b>${none}</b>Not started</div></div>
- <div class="row"><b style="flex:1">Learner progress</b><button class="btn s sm" onclick="S.all=null;render()">↻ Refresh</button> <button class="btn s sm" onclick="csv()">Export CSV</button></div><div style="overflow:auto"><table><tr><th>User ID</th><th>Name</th><th>Sections</th><th>Best score</th><th>Status</th><th>Certified on</th><th>Actions</th></tr>${rows||'<tr><td colspan=7 class="mu">No learners yet.</td></tr>'}</table></div>
+ <div class="row"><b style="flex:1">Learner progress</b><button class="btn s sm" onclick="S.all=null;render()">↻ Refresh</button> <button class="btn d sm" onclick="retrain(Object.keys(U()).filter(k=>U()[k].role!=='admin'))">Retrain all</button> <button class="btn s sm" onclick="csv()">Export CSV</button></div><div style="overflow:auto"><table><tr><th>User ID</th><th>Name</th><th>Sections</th><th>Best score</th><th>Status</th><th>Certified on</th><th>Actions</th></tr>${rows||'<tr><td colspan=7 class="mu">No learners yet.</td></tr>'}</table></div>
  <p class="mu" style="margin-top:16px">Learner list comes from <b>users.csv</b> in your GitHub repo. To add, remove or change learners or passwords, edit that file and commit it.</p>`}
 function add(a){S.d[a].push(a==='sections'?{id:'s'+Date.now(),title:'New section',desc:'',src:'',mins:5}:{q:'',o:['','','',''],a:0});render()}
 function del(a,i){if(S.d[a].length<2)return toast('At least one is required');if(confirm('Delete?')){S.d[a].splice(i,1);render()}}
@@ -204,11 +204,16 @@ function expC(){const a=document.createElement('a');a.href=URL.createObjectURL(n
 function impC(el){const f=el.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const c=JSON.parse(r.result);if(!c.sections||!c.questions)throw 0;S.d={...DEF,...c,cert:{...DEF.cert,...c.cert}};toast('Imported – click Save changes');render()}catch(e){toast('Invalid file')}};r.readAsText(f)}
 
 
-function resetPr(id){if(!confirm('Reset all progress for '+id+'?'))return;const a=P();delete a[id];W('mp_prog',a);if(SYNC)api('POST',{a:'prog',u:id,d:null,key:akey()}).then(()=>{S.all=null;render()});else render()}
+async function retrain(ids){if(!ids.length)return toast('No learners');
+ if(!confirm(ids.length>1?`Restart training from Section 1 for ALL ${ids.length} learners? Current progress and certificates will be cleared (past completions are kept in history).`:`Restart training for ${ids[0]} from Section 1? Current progress and certificate will be cleared (kept in history).`))return;
+ const base=S.all||P(),l=P(),t=Date.now();
+ for(const id of ids){const o=base[id]||{},n={done:{},tries:[],watch:{},retrain:t,history:[...(o.history||[]),...(o.cert?[{cert:o.cert}]:[])]};l[id]=n;
+  if(SYNC){try{const r=await api('POST',{a:'prog',u:id,d:n,key:akey()});if(r.error){sessionStorage.removeItem('mp_k');return toast('Wrong sync key')}}catch(e){return toast('Server unreachable')}}}
+ W('mp_prog',l);toast('Training restarted from Section 1');S.all=null;render()}
 
 
-function csv(){const us=U(),pr=S.all||P(),L=[['UserID','Name','Sections done','Best score','Status','Certificate ID','Certified on']];
- Object.entries(us).filter(([k,v])=>v.role!=='admin').forEach(([id,v])=>{const s=stat(id,pr),ce=pr[id]?.cert;L.push([id,v.name,s.n+'/'+s.t,Math.max(0,...(pr[id]?.tries||[]).map(t=>t.score)),ce?'Certified':s.n?'In progress':'Not started',ce?.id||'',ce?new Date(ce.date).toLocaleDateString():''])});
+function csv(){const us=U(),pr=S.all||P(),L=[['UserID','Name','Sections done','Best score','Status','Certificate ID','Certified on','Previous completions']];
+ Object.entries(us).filter(([k,v])=>v.role!=='admin').forEach(([id,v])=>{const s=stat(id,pr),ce=pr[id]?.cert;L.push([id,v.name,s.n+'/'+s.t,Math.max(0,...(pr[id]?.tries||[]).map(t=>t.score)),ce?'Certified':s.n?'In progress':'Not started',ce?.id||'',ce?new Date(ce.date).toLocaleDateString():'',pr[id]?.history?.length||0])});
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([L.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')).join('\n')],{type:'text/csv'}));a.download='training-report.csv';a.click()}
 boot();
 </script>
