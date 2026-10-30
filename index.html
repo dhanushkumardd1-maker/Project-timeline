@@ -58,14 +58,39 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 async function H(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('mpl|'+s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
 let USERS={},CSVERR='';
 /* ===== SYNC: paste your Google Apps Script Web App URL between the quotes (see setup steps) ===== */
-const SYNC='https://script.google.com/macros/s/AKfycbw2xiPl2qo6PIK83_ojLjZkRHarFhpkoWk6ebMl19bilQ3MeYTnBHSqjcIxXRcc451l/exec';
+const SYNC='https://script.google.com/macros/s/AKfycbx5SqMo2hrgbv0EEpWTBCJMuRGVZG-UK5FOSqgz4NAFYlZMACqZMPTGWVqBSb3UGnYa/exec';
 async function api(m,b){const r=await fetch(m==='GET'?SYNC+'?'+new URLSearchParams(b):SYNC,m==='GET'?{}:{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(b)});return r.json()}
 function akey(){let k=sessionStorage.getItem('mp_k');if(!k){k=prompt('Enter Admin Sync Key');if(k)sessionStorage.setItem('mp_k',k)}return k}
 async function pullProg(){if(!SYNC||!S.u||USERS[S.u]?.role==='admin')return;
  try{const r=await api('GET',{a:'prog',u:S.u});if(r&&r.done){const a=P(),l=a[S.u]||{done:{}};if((r.retrain||0)>(l.retrain||0)){a[S.u]=r;localStorage.setItem('mp_prog',JSON.stringify(a));return}const m={...l,...r};m.history=r.history||l.history;m.done={...r.done,...l.done};m.watch={...(r.watch||{}),...(l.watch||{})};
   const t={};[...(l.tries||[]),...(r.tries||[])].forEach(x=>t[x.date]=x);m.tries=Object.values(t);m.cert=l.cert||r.cert;a[S.u]=m;localStorage.setItem('mp_prog',JSON.stringify(a))}}catch(e){}}
-let pt;function pushProg(){if(!SYNC||!S.u||USERS[S.u]?.role==='admin')return;clearTimeout(pt);pt=setTimeout(()=>api('POST',{a:'prog',u:S.u,d:P()[S.u]}).catch(()=>toast('Offline – progress will sync next time')),500)}
+let pt, syncBusy=false, syncAgain=false;
+function pushProg(){
+ if(!SYNC||!S.u||USERS[S.u]?.role==='admin')return;
+ clearTimeout(pt);
+ pt=setTimeout(async()=>{
+  if(syncBusy){syncAgain=true;return} syncBusy=true;
+  try{const r=await api('POST',{a:'prog',u:S.u,d:P()[S.u]});if(r&&r.error)toast('Sync rejected – please contact Admin');else if(r&&r.stale)await pullProg();}
+  catch(e){toast('Connection issue – progress is saved on this device and will retry')}
+  finally{syncBusy=false;if(syncAgain){syncAgain=false;pushProg()}}
+ },150);
+}
+async function syncLearner(){
+ if(!SYNC||!S.u||USERS[S.u]?.role==='admin'||document.visibilityState!=='visible')return;
+ const before=JSON.stringify(P()[S.u]||{}); await pullProg();
+ const after=JSON.stringify(P()[S.u]||{});
+ if(before!==after&&S.u){const u=U()[S.u];if(u){$a(learnerV(u));if(typeof S.cur==='number')mountMedia()}}
+}
 async function pullAll(){if(!SYNC)return;const k=akey();if(!k)return;try{const r=await api('GET',{a:'all',key:k});if(r.error){sessionStorage.removeItem('mp_k');return toast('Wrong sync key')}S.all=r}catch(e){toast('Could not reach server')}}
+let adminRefreshing=false;
+async function refreshAdmin(){
+ if(!SYNC||!S.u||USERS[S.u]?.role!=='admin'||S.tab!=='d'||adminRefreshing||document.visibilityState!=='visible')return;
+ adminRefreshing=true;
+ try{const k=sessionStorage.getItem('mp_k')||akey();if(!k)return;const r=await api('GET',{a:'all',key:k});if(r.error){sessionStorage.removeItem('mp_k');toast('Wrong sync key');return}
+ const changed=JSON.stringify(r)!==JSON.stringify(S.all||{});S.all=r;
+ if(changed){const box=document.querySelector('.main');if(box)box.innerHTML=dashV()}
+ }catch(e){}finally{adminRefreshing=false}
+}
 let S={u:sessionStorage.getItem('mp_s'),cur:0,fail:0,lock:0,tab:'d',d:null,iv:null};
 const $a=h=>document.getElementById('app').innerHTML=h;
 function parseCSV(t){t=t.replace(/^\uFEFF/,'');const rows=[];let r=[],f='',q=false;
@@ -81,7 +106,10 @@ async function boot(){try{const res=await fetch('users.csv?'+Date.now(),{cache:'
   if(!Object.keys(USERS).length)throw 0}
  catch(e){CSVERR='users.csv not found or empty. Upload it to the same folder as index.html and open the site via GitHub Pages (not by double-clicking the file).'}
  if(SYNC){try{const c=await api('GET',{a:'cfg'});if(c&&c.sections)localStorage.setItem('mp_cfg',JSON.stringify(c))}catch(e){}await pullProg()}
- render()}
+ render();
+ if(SYNC){clearInterval(S.syncTimer);S.syncTimer=setInterval(()=>{if(!S.u)return;if(USERS[S.u]?.role==='admin')refreshAdmin();else syncLearner()},4000);
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&S.u){if(USERS[S.u]?.role==='admin')refreshAdmin();else syncLearner()}})}
+}
 async function okPw(u,p){return u.pw.startsWith('sha256:')?u.pw.slice(7).toLowerCase()===await H(p):u.pw===p}
 function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),2500)}
 const hdr=n=>`<header><div class="logo"><i>M</i>MICRO PLASTICS PVT LTD</div><div>${n?esc(n)+' &nbsp; <button class="btn s sm" onclick="logout()">Logout</button>':''}</div></header>`;
@@ -102,14 +130,14 @@ async function login(e){e.preventDefault();const er=document.getElementById('er'
  const id=uid.value.trim().toLowerCase(),u=U()[id];
  if(u&&await okPw(u,pw.value)){S.u=id;S.fail=0;S.cur=0;S.tab='d';S.d=null;S.all=null;sessionStorage.setItem('mp_s',id);await pullProg();render()}
  else{if(++S.fail>=5){S.lock=Date.now()+30000;S.fail=0}er.textContent='Invalid User ID or password.'}}
-function logout(){S.u=null;S.d=null;sessionStorage.removeItem('mp_s');render()}
+function logout(){clearInterval(S.syncTimer);S.u=null;S.d=null;sessionStorage.removeItem('mp_s');render()}
 
 /* ---------- MEDIA ---------- */
 function embed(src){src=src||'';const d=src.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([\w-]+)/)||(/drive\.google/.test(src)&&src.match(/[?&]id=([\w-]+)/));
  if(d)return{f:1,u:`https://drive.google.com/file/d/${d[1]}/preview`};
  const y=src.match(/(?:v=|youtu\.be\/|embed\/)([\w-]{11})/);if(y)return{f:1,u:`https://www.youtube.com/embed/${y[1]}?rel=0`};
  return{f:0,u:src}}
-function saveWatch(id,w){const a=P();a[S.u]=a[S.u]||{done:{}};a[S.u].watch=a[S.u].watch||{};a[S.u].watch[id]=w;localStorage.setItem('mp_prog',JSON.stringify(a))}
+function saveWatch(id,w){const a=P();a[S.u]=a[S.u]||{done:{}};a[S.u].watch=a[S.u].watch||{};a[S.u].watch[id]=w;localStorage.setItem('mp_prog',JSON.stringify(a));pushProg()}
 function mountMedia(){const s=C().sections[S.cur];if(!s||P()[S.u]?.done?.[s.id])return;
  if(embed(s.src).f){const need=(s.mins||1)*60;let w=P()[S.u]?.watch?.[s.id]||0;
   const tick=()=>{const left=Math.max(0,need-w),t=document.getElementById('tm'),b=document.getElementById('mk');if(!t)return;
@@ -189,7 +217,7 @@ function dashV(){const us=U(),pr=S.all||P();let rows='',done=0,prog=0,none=0;
   rows+=`<tr><td>${esc(id)}</td><td>${esc(v.name)}</td><td>${s.n}/${s.t}</td><td>${pr[id]?.tries?.length?b+'%':'–'}</td><td><span class="tag ${ce?'t1':s.n?'t2':'t3'}">${ce?'Certified':s.n?'In progress':'Not started'}</span>${pr[id]?.history?.length?`<br><small class="mu">Previous completions: ${pr[id].history.length}</small>`:''}</td><td>${ce?new Date(ce.date).toLocaleDateString():'–'}</td>
   <td><button class="btn s sm" data-id="${esc(id)}" onclick="retrain([this.dataset.id])">Retrain</button></td></tr>`});
  return `${SYNC?'':'<p class="err">⚠ Sync is not configured – progress is saved only in each device\'s own browser. See setup steps.</p>'}<div class="cards" style="margin-top:0"><div class="card"><b>${done+prog+none}</b>Total learners</div><div class="card"><b style="color:var(--ok)">${done}</b>Completed &amp; certified</div><div class="card"><b>${prog}</b>In progress</div><div class="card"><b>${none}</b>Not started</div></div>
- <div class="row"><b style="flex:1">Learner progress</b><button class="btn s sm" onclick="S.all=null;render()">↻ Refresh</button> <button class="btn d sm" onclick="retrain(Object.keys(U()).filter(k=>U()[k].role!=='admin'))">Retrain all</button> <button class="btn s sm" onclick="csv()">Export CSV</button></div><div style="overflow:auto"><table><tr><th>User ID</th><th>Name</th><th>Sections</th><th>Best score</th><th>Status</th><th>Certified on</th><th>Actions</th></tr>${rows||'<tr><td colspan=7 class="mu">No learners yet.</td></tr>'}</table></div>
+ <div class="row"><b style="flex:1">Learner progress · live refresh every 4 seconds</b><button class="btn s sm" onclick="S.all=null;render()">↻ Refresh</button> <button class="btn d sm" onclick="retrain(Object.keys(U()).filter(k=>U()[k].role!=='admin'))">Retrain all</button> <button class="btn s sm" onclick="csv()">Export CSV</button></div><div style="overflow:auto"><table><tr><th>User ID</th><th>Name</th><th>Sections</th><th>Best score</th><th>Status</th><th>Certified on</th><th>Actions</th></tr>${rows||'<tr><td colspan=7 class="mu">No learners yet.</td></tr>'}</table></div>
  <p class="mu" style="margin-top:16px">Learner list comes from <b>users.csv</b> in your GitHub repo. To add, remove or change learners or passwords, edit that file and commit it.</p>`}
 function add(a){S.d[a].push(a==='sections'?{id:'s'+Date.now(),title:'New section',desc:'',src:'',mins:5}:{q:'',o:['','','',''],a:0});render()}
 function del(a,i){if(S.d[a].length<2)return toast('At least one is required');if(confirm('Delete?')){S.d[a].splice(i,1);render()}}
