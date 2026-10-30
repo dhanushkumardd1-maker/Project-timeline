@@ -1,0 +1,4 @@
+userid,username,password,role
+admin,Administrator,Admin@123,admin
+emp001,Ravi Kumar,Welcome@101,user
+emp002,Priya Sharma,Welcome@102,user

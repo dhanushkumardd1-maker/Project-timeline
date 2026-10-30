@@ -53,12 +53,26 @@ const DEF={course:"Plastics Safety & Quality Induction",passMark:70,
 const J=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}};
 const W=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
 /* Data layer – swap these for Firebase/Supabase to share data across devices */
-const C=()=>{const s=J('mp_cfg',{});return{...DEF,...s,cert:{...DEF.cert,...(s.cert||{})}}},U=()=>J('mp_users',{}),P=()=>J('mp_prog',{});
+const C=()=>{const s=J('mp_cfg',{});return{...DEF,...s,cert:{...DEF.cert,...(s.cert||{})}}},U=()=>USERS,P=()=>J('mp_prog',{});
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 async function H(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('mpl|'+s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+let USERS={},CSVERR='';
 let S={u:sessionStorage.getItem('mp_s'),cur:0,fail:0,lock:0,tab:'d',d:null,iv:null};
 const $a=h=>document.getElementById('app').innerHTML=h;
-async function boot(){const u=U();if(!u.admin){u.admin={name:'Administrator',role:'admin',h:await H('Admin@123')};W('mp_users',u)}render()}
+function parseCSV(t){t=t.replace(/^\uFEFF/,'');const rows=[];let r=[],f='',q=false;
+ for(let i=0;i<t.length;i++){const c=t[i];
+  if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}
+  else if(c=='"')q=true;
+  else if(c==','){r.push(f);f=''}
+  else if(c=='\n'||c=='\r'){if(c=='\r'&&t[i+1]=='\n')i++;r.push(f);f='';if(r.some(x=>x.trim()))rows.push(r);r=[]}
+  else f+=c}
+ r.push(f);if(r.some(x=>x.trim()))rows.push(r);return rows}
+async function boot(){try{const res=await fetch('users.csv?'+Date.now(),{cache:'no-store'});if(!res.ok)throw 0;
+  parseCSV(await res.text()).slice(1).forEach(r=>{const id=(r[0]||'').trim().toLowerCase();if(id&&r[2])USERS[id]={name:(r[1]||id).trim(),pw:r[2].trim(),role:(r[3]||'user').trim().toLowerCase()==='admin'?'admin':'user'}});
+  if(!Object.keys(USERS).length)throw 0}
+ catch(e){CSVERR='users.csv not found or empty. Upload it to the same folder as index.html and open the site via GitHub Pages (not by double-clicking the file).'}
+ render()}
+async function okPw(u,p){return u.pw.startsWith('sha256:')?u.pw.slice(7).toLowerCase()===await H(p):u.pw===p}
 function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),2500)}
 const hdr=n=>`<header><div class="logo"><i>M</i>MICRO PLASTICS PVT LTD</div><div>${n?esc(n)+' &nbsp; <button class="btn s sm" onclick="logout()">Logout</button>':''}</div></header>`;
 function render(){clearInterval(S.iv);const u=U()[S.u];
@@ -71,12 +85,12 @@ function loginV(){return `<div class="login"><div class="hero"><div class="logo"
 <h1>Employee Training Portal</h1><p>Complete your section-wise training videos, pass the final assessment and download your certificate.</p>
 <ul><li>▶ Sequential video modules</li><li>✔ Final assessment (pass mark ${C().passMark}%)</li><li>🎓 Certificate on completion</li></ul></div>
 <div class="lbox"><form onsubmit="login(event)"><h2 style="margin-top:0;color:var(--navy)">Sign in</h2><label class="l">User ID</label><input id="uid" autocomplete="username" required>
-<label class="l">Password</label><input id="pw" type="password" autocomplete="current-password" required><div class="err" id="er"></div><button class="btn" style="width:100%">Login</button>
+<label class="l">Password</label><input id="pw" type="password" autocomplete="current-password" required><div class="err" id="er">${esc(CSVERR)}</div><button class="btn" style="width:100%">Login</button>
 <p class="mu" style="text-align:center">Forgot password? Contact your administrator.</p></form></div></div>`}
 async function login(e){e.preventDefault();const er=document.getElementById('er');
  if(Date.now()<S.lock)return er.textContent='Too many attempts. Wait '+Math.ceil((S.lock-Date.now())/1000)+'s.';
  const id=uid.value.trim().toLowerCase(),u=U()[id];
- if(u&&u.h===await H(pw.value)){S.u=id;S.fail=0;S.cur=0;S.tab='d';S.d=null;sessionStorage.setItem('mp_s',id);render()}
+ if(u&&await okPw(u,pw.value)){S.u=id;S.fail=0;S.cur=0;S.tab='d';S.d=null;sessionStorage.setItem('mp_s',id);render()}
  else{if(++S.fail>=5){S.lock=Date.now()+30000;S.fail=0}er.textContent='Invalid User ID or password.'}}
 function logout(){S.u=null;S.d=null;sessionStorage.removeItem('mp_s');render()}
 
@@ -156,31 +170,33 @@ function adminV(u){if(!S.d)S.d=JSON.parse(JSON.stringify(C()));const D=S.d;let b
   <div><b>Live preview</b>${certHTML(D,'Sample Employee Name',{id:'MPPL-2026-ABC123',date:Date.now(),score:90},'EMP001')}</div></div><br><button class="btn" onclick="saveD()">Save changes</button>`}
  if(S.tab==='x')b=`<div class="g2"><div><label class="l">Course name</label><input value="${esc(D.course)}" oninput="S.d.course=this.value"><label class="l">Pass mark (%)</label><input type="number" min="1" max="100" value="${D.passMark}" oninput="S.d.passMark=+this.value">
   <button class="btn" onclick="saveD()">Save changes</button></div><div><b>Backup</b><p class="mu">Course data is stored in this browser. Export a backup file, or import one on another computer.</p>
-  <button class="btn s" onclick="expC()">Export course</button> <input type="file" accept=".json" onchange="impC(this)" style="margin-top:10px"><hr><button class="btn s" onclick="chPw()">Change admin password</button></div></div>`;
+  <button class="btn s" onclick="expC()">Export course</button> <input type="file" accept=".json" onchange="impC(this)" style="margin-top:10px"><hr><b>Protect passwords (recommended)</b><p class="mu">Paste your users.csv here (with header). Plain passwords are converted to hashed form so they are not readable in the public file. Replace users.csv on GitHub with the downloaded file.</p>
+  <textarea id="hin" rows="5" placeholder="userid,username,password,role&#10;admin,Administrator,Admin@123,admin"></textarea><button class="btn s" onclick="hashCsv()">Convert &amp; download users.csv</button></div></div>`;
  return hdr(u.name)+`<div style="max-width:1200px;margin:20px auto;padding:0 16px"><h2 style="color:var(--navy);margin-bottom:0">Admin Panel</h2><div class="tabs">${TABS.map(([k,l])=>`<button class="${S.tab===k?'on':''}" onclick="S.tab='${k}';render()">${l}</button>`).join('')}</div><div class="main">${b}</div></div>`}
 function dashV(){const us=U(),pr=P();let rows='',done=0,prog=0,none=0;
  Object.entries(us).filter(([k,v])=>v.role!=='admin').forEach(([id,v])=>{const s=stat(id),ce=pr[id]?.cert,b=Math.max(0,...(pr[id]?.tries||[]).map(t=>t.score));
   if(ce)done++;else if(s.n)prog++;else none++;
   rows+=`<tr><td>${esc(id)}</td><td>${esc(v.name)}</td><td>${s.n}/${s.t}</td><td>${pr[id]?.tries?.length?b+'%':'–'}</td><td><span class="tag ${ce?'t1':s.n?'t2':'t3'}">${ce?'Certified':s.n?'In progress':'Not started'}</span></td><td>${ce?new Date(ce.date).toLocaleDateString():'–'}</td>
-  <td><button class="btn s sm" onclick="resetPw('${esc(id)}')">Reset pwd</button> <button class="btn s sm" onclick="resetPr('${esc(id)}')">Reset progress</button> <button class="btn d sm" onclick="delU('${esc(id)}')">Delete</button></td></tr>`});
+  <td><button class="btn s sm" onclick="resetPr('${esc(id)}')">Reset progress</button></td></tr>`});
  return `<div class="cards" style="margin-top:0"><div class="card"><b>${done+prog+none}</b>Total learners</div><div class="card"><b style="color:var(--ok)">${done}</b>Completed &amp; certified</div><div class="card"><b>${prog}</b>In progress</div><div class="card"><b>${none}</b>Not started</div></div>
  <div class="row"><b style="flex:1">Learner progress</b><button class="btn s sm" onclick="csv()">Export CSV</button></div><div style="overflow:auto"><table><tr><th>User ID</th><th>Name</th><th>Sections</th><th>Best score</th><th>Status</th><th>Certified on</th><th>Actions</th></tr>${rows||'<tr><td colspan=7 class="mu">No learners yet.</td></tr>'}</table></div>
- <hr style="margin:20px 0;border:0;border-top:1px solid var(--bd)"><b>Add learners</b> <span class="mu">– one per line: userid,full name,password (min 6 characters)</span>
- <textarea id="bulk" rows="4" placeholder="emp001,Ravi Kumar,Pass@123&#10;emp002,Priya S,Pass@456" style="margin-top:8px"></textarea><button class="btn" onclick="addU()">Add learners</button>`}
+ <p class="mu" style="margin-top:16px">Learner list comes from <b>users.csv</b> in your GitHub repo. To add, remove or change learners or passwords, edit that file and commit it.</p>`}
 function add(a){S.d[a].push(a==='sections'?{id:'s'+Date.now(),title:'New section',desc:'',src:'',mins:5}:{q:'',o:['','','',''],a:0});render()}
 function del(a,i){if(S.d[a].length<2)return toast('At least one is required');if(confirm('Delete?')){S.d[a].splice(i,1);render()}}
 function mv(a,i,d){const j=i+d,A=S.d[a];if(j<0||j>=A.length)return;[A[i],A[j]]=[A[j],A[i]];render()}
 function saveD(){const D=S.d;if(D.questions.some(q=>!q.q.trim()||!q.o[D.questions.indexOf(q)>-1?q.a:0]?.trim()))return toast('Fill all questions and the correct option');
  if(D.sections.some(s=>!s.title.trim()))return toast('Every section needs a title');W('mp_cfg',D);toast('Saved ✓')}
 function logo(el){const f=el.files[0];if(!f)return;if(f.size>3e5)return toast('Logo too large (max 300 KB)');const r=new FileReader();r.onload=()=>{S.d.cert.logo=r.result;render()};r.readAsDataURL(f)}
+async function hashCsv(){const R=parseCSV(hin.value);if(R.length<2)return toast('Paste CSV including header row');const out=[R[0]];
+ for(const r of R.slice(1)){if(r[2]&&!r[2].trim().startsWith('sha256:'))r[2]='sha256:'+await H(r[2].trim());out.push(r)}
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([out.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')).join('\n')],{type:'text/csv'}));a.download='users.csv';a.click()}
 function expC(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S.d,null,1)],{type:'application/json'}));a.download='course-backup.json';a.click()}
 function impC(el){const f=el.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const c=JSON.parse(r.result);if(!c.sections||!c.questions)throw 0;S.d={...DEF,...c,cert:{...DEF.cert,...c.cert}};toast('Imported – click Save changes');render()}catch(e){toast('Invalid file')}};r.readAsText(f)}
-async function addU(){const u=U();let n=0;for(const l of bulk.value.split('\n')){const [id,nm,pw]=l.split(',').map(x=>x?.trim());if(!id||!nm||!pw||pw.length<6||u[id.toLowerCase()])continue;u[id.toLowerCase()]={name:nm,role:'user',h:await H(pw)};n++}
- W('mp_users',u);toast(n+' learner(s) added');render()}
-async function resetPw(id){const p=prompt('New password for '+id+' (min 6):');if(!p||p.length<6)return;const u=U();u[id].h=await H(p);W('mp_users',u);toast('Password reset')}
+
+
 function resetPr(id){if(!confirm('Reset all progress for '+id+'?'))return;const a=P();delete a[id];W('mp_prog',a);render()}
-function delU(id){if(!confirm('Delete '+id+'?'))return;const u=U(),a=P();delete u[id];delete a[id];W('mp_users',u);W('mp_prog',a);render()}
-async function chPw(){const p=prompt('New admin password (min 8):');if(!p||p.length<8)return toast('Too short');const u=U();u.admin.h=await H(p);W('mp_users',u);toast('Password changed')}
+
+
 function csv(){const us=U(),pr=P(),L=[['UserID','Name','Sections done','Best score','Status','Certificate ID','Certified on']];
  Object.entries(us).filter(([k,v])=>v.role!=='admin').forEach(([id,v])=>{const s=stat(id),ce=pr[id]?.cert;L.push([id,v.name,s.n+'/'+s.t,Math.max(0,...(pr[id]?.tries||[]).map(t=>t.score)),ce?'Certified':s.n?'In progress':'Not started',ce?.id||'',ce?new Date(ce.date).toLocaleDateString():''])});
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([L.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')).join('\n')],{type:'text/csv'}));a.download='training-report.csv';a.click()}
