@@ -58,7 +58,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 async function H(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('mpl|'+s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
 let USERS={},CSVERR='';
 /* ===== SYNC: paste your Google Apps Script Web App URL between the quotes (see setup steps) ===== */
-const SYNC='https://script.google.com/macros/s/AKfycbxftosmKzGEZPWhKoAaFbK2AniAHoE7EAmaOxyuNp-DhG4cbmEKT134ic0oqz_UrN9t/exec';
+const SYNC='https://script.google.com/macros/s/AKfycbw2xiPl2qo6PIK83_ojLjZkRHarFhpkoWk6ebMl19bilQ3MeYTnBHSqjcIxXRcc451l/exec';
 async function api(m,b){const r=await fetch(m==='GET'?SYNC+'?'+new URLSearchParams(b):SYNC,m==='GET'?{}:{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(b)});return r.json()}
 function akey(){let k=sessionStorage.getItem('mp_k');if(!k){k=prompt('Enter Admin Sync Key');if(k)sessionStorage.setItem('mp_k',k)}return k}
 async function pullProg(){if(!SYNC||!S.u||USERS[S.u]?.role==='admin')return;
