@@ -57,6 +57,15 @@ const C=()=>{const s=J('mp_cfg',{});return{...DEF,...s,cert:{...DEF.cert,...(s.c
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 async function H(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('mpl|'+s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
 let USERS={},CSVERR='';
+/* ===== SYNC: paste your Google Apps Script Web App URL between the quotes (see setup steps) ===== */
+const SYNC='https://script.google.com/macros/s/AKfycbxftosmKzGEZPWhKoAaFbK2AniAHoE7EAmaOxyuNp-DhG4cbmEKT134ic0oqz_UrN9t/exec';
+async function api(m,b){const r=await fetch(m==='GET'?SYNC+'?'+new URLSearchParams(b):SYNC,m==='GET'?{}:{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(b)});return r.json()}
+function akey(){let k=sessionStorage.getItem('mp_k');if(!k){k=prompt('Enter Admin Sync Key');if(k)sessionStorage.setItem('mp_k',k)}return k}
+async function pullProg(){if(!SYNC||!S.u||USERS[S.u]?.role==='admin')return;
+ try{const r=await api('GET',{a:'prog',u:S.u});if(r&&r.done){const a=P(),l=a[S.u]||{done:{}},m={...l,...r};m.done={...r.done,...l.done};m.watch={...(r.watch||{}),...(l.watch||{})};
+  const t={};[...(l.tries||[]),...(r.tries||[])].forEach(x=>t[x.date]=x);m.tries=Object.values(t);m.cert=l.cert||r.cert;a[S.u]=m;localStorage.setItem('mp_prog',JSON.stringify(a))}}catch(e){}}
+let pt;function pushProg(){if(!SYNC||!S.u||USERS[S.u]?.role==='admin')return;clearTimeout(pt);pt=setTimeout(()=>api('POST',{a:'prog',u:S.u,d:P()[S.u]}).catch(()=>toast('Offline – progress will sync next time')),500)}
+async function pullAll(){if(!SYNC)return;const k=akey();if(!k)return;try{const r=await api('GET',{a:'all',key:k});if(r.error){sessionStorage.removeItem('mp_k');return toast('Wrong sync key')}S.all=r}catch(e){toast('Could not reach server')}}
 let S={u:sessionStorage.getItem('mp_s'),cur:0,fail:0,lock:0,tab:'d',d:null,iv:null};
 const $a=h=>document.getElementById('app').innerHTML=h;
 function parseCSV(t){t=t.replace(/^\uFEFF/,'');const rows=[];let r=[],f='',q=false;
@@ -71,13 +80,14 @@ async function boot(){try{const res=await fetch('users.csv?'+Date.now(),{cache:'
   parseCSV(await res.text()).slice(1).forEach(r=>{const id=(r[0]||'').trim().toLowerCase();if(id&&r[2])USERS[id]={name:(r[1]||id).trim(),pw:r[2].trim(),role:(r[3]||'user').trim().toLowerCase()==='admin'?'admin':'user'}});
   if(!Object.keys(USERS).length)throw 0}
  catch(e){CSVERR='users.csv not found or empty. Upload it to the same folder as index.html and open the site via GitHub Pages (not by double-clicking the file).'}
+ if(SYNC){try{const c=await api('GET',{a:'cfg'});if(c&&c.sections)localStorage.setItem('mp_cfg',JSON.stringify(c))}catch(e){}await pullProg()}
  render()}
 async function okPw(u,p){return u.pw.startsWith('sha256:')?u.pw.slice(7).toLowerCase()===await H(p):u.pw===p}
 function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),2500)}
 const hdr=n=>`<header><div class="logo"><i>M</i>MICRO PLASTICS PVT LTD</div><div>${n?esc(n)+' &nbsp; <button class="btn s sm" onclick="logout()">Logout</button>':''}</div></header>`;
 function render(){clearInterval(S.iv);const u=U()[S.u];
  if(!u){S.u=null;sessionStorage.removeItem('mp_s');return $a(loginV())}
- if(u.role==='admin')return $a(adminV(u));
+ if(u.role==='admin'){$a(adminV(u));if(SYNC&&S.tab==='d'&&!S.all)pullAll().then(()=>S.all&&render());return}
  $a(learnerV(u));if(typeof S.cur==='number')mountMedia()}
 
 /* ---------- LOGIN ---------- */
@@ -90,7 +100,7 @@ function loginV(){return `<div class="login"><div class="hero"><div class="logo"
 async function login(e){e.preventDefault();const er=document.getElementById('er');
  if(Date.now()<S.lock)return er.textContent='Too many attempts. Wait '+Math.ceil((S.lock-Date.now())/1000)+'s.';
  const id=uid.value.trim().toLowerCase(),u=U()[id];
- if(u&&await okPw(u,pw.value)){S.u=id;S.fail=0;S.cur=0;S.tab='d';S.d=null;sessionStorage.setItem('mp_s',id);render()}
+ if(u&&await okPw(u,pw.value)){S.u=id;S.fail=0;S.cur=0;S.tab='d';S.d=null;S.all=null;sessionStorage.setItem('mp_s',id);await pullProg();render()}
  else{if(++S.fail>=5){S.lock=Date.now()+30000;S.fail=0}er.textContent='Invalid User ID or password.'}}
 function logout(){S.u=null;S.d=null;sessionStorage.removeItem('mp_s');render()}
 
@@ -99,7 +109,7 @@ function embed(src){src=src||'';const d=src.match(/drive\.google\.com\/(?:file\/
  if(d)return{f:1,u:`https://drive.google.com/file/d/${d[1]}/preview`};
  const y=src.match(/(?:v=|youtu\.be\/|embed\/)([\w-]{11})/);if(y)return{f:1,u:`https://www.youtube.com/embed/${y[1]}?rel=0`};
  return{f:0,u:src}}
-function saveWatch(id,w){const a=P();a[S.u]=a[S.u]||{done:{}};a[S.u].watch=a[S.u].watch||{};a[S.u].watch[id]=w;W('mp_prog',a)}
+function saveWatch(id,w){const a=P();a[S.u]=a[S.u]||{done:{}};a[S.u].watch=a[S.u].watch||{};a[S.u].watch[id]=w;localStorage.setItem('mp_prog',JSON.stringify(a))}
 function mountMedia(){const s=C().sections[S.cur];if(!s||P()[S.u]?.done?.[s.id])return;
  if(embed(s.src).f){const need=(s.mins||1)*60;let w=P()[S.u]?.watch?.[s.id]||0;
   const tick=()=>{const left=Math.max(0,need-w),t=document.getElementById('tm'),b=document.getElementById('mk');if(!t)return;
@@ -110,7 +120,7 @@ function mountMedia(){const s=C().sections[S.cur];if(!s||P()[S.u]?.done?.[s.id])
   v.onerror=()=>document.getElementById('vmsg').textContent='Video could not be loaded. Please inform the administrator.'}}
 
 /* ---------- LEARNER ---------- */
-function stat(id){const c=C(),p=P()[id]||{done:{}},n=c.sections.filter(s=>p.done?.[s.id]).length;return{n,t:c.sections.length,all:n===c.sections.length,p}}
+function stat(id,pr=P()){const c=C(),p=pr[id]||{done:{}},n=c.sections.filter(s=>p.done?.[s.id]).length;return{n,t:c.sections.length,all:n===c.sections.length,p}}
 function learnerV(u){const c=C(),{n,t,all,p}=stat(S.u),pct=Math.round(n/t*100);
  const items=c.sections.map((s,i)=>{const ok=p.done?.[s.id],lk=i>0&&!p.done?.[c.sections[i-1].id]&&!ok;
   return `<div class="item ${S.cur===i?'on':''} ${lk?'lk':''}" onclick="go(${i})"><span class="dot ${ok?'ok':''}">${ok?'✓':i+1}</span>${esc(s.title)}</div>`}).join('');
@@ -129,7 +139,7 @@ function learnerV(u){const c=C(),{n,t,all,p}=stat(S.u),pct=Math.round(n/t*100);
 function go(i){const c=C(),p=P()[S.u]||{done:{}};
  if(typeof i==='number'&&i>0&&!p.done?.[c.sections[i-1].id]&&!p.done?.[c.sections[i].id])return;
  if(i==='a'&&!stat(S.u).all)return;if(i==='c'&&!p.cert)return;S.cur=i;render()}
-function mark(){const s=C().sections[S.cur],a=P();a[S.u]=a[S.u]||{done:{}};if(a[S.u].done[s.id])return;a[S.u].done[s.id]=Date.now();W('mp_prog',a);toast('Section completed ✓');render()}
+function mark(){const s=C().sections[S.cur],a=P();a[S.u]=a[S.u]||{done:{}};if(a[S.u].done[s.id])return;a[S.u].done[s.id]=Date.now();W('mp_prog',a);pushProg();toast('Section completed ✓');render()}
 function assessV(c,p){const best=Math.max(0,...(p.tries||[]).map(t=>t.score));
  if(p.cert)return `<h2 style="margin-top:0">Assessment passed ✓</h2><p>Best score: <b>${best}%</b>.</p><button class="btn" onclick="go('c')">View Certificate</button>`;
  return `<h2 style="margin-top:0">Final Assessment</h2><p class="mu">${c.questions.length} questions · Pass mark ${c.passMark}% · Unlimited attempts${p.tries?.length?` · Last: ${p.tries.at(-1).score}%`:''}</p>
@@ -137,7 +147,7 @@ function assessV(c,p){const best=Math.max(0,...(p.tries||[]).map(t=>t.score));
 function submitA(e){e.preventDefault();const c=C(),f=new FormData(e.target);let r=0;c.questions.forEach((q,i)=>{if(+f.get('q'+i)===q.a)r++});
  const score=Math.round(r/c.questions.length*100),a=P();a[S.u].tries=a[S.u].tries||[];a[S.u].tries.push({score,date:Date.now()});
  const pass=score>=c.passMark;if(pass)a[S.u].cert={id:'MPPL-'+new Date().getFullYear()+'-'+crypto.getRandomValues(new Uint32Array(1))[0].toString(16).toUpperCase().slice(0,6),date:Date.now(),score};
- W('mp_prog',a);toast(pass?'Passed with '+score+'%':'Scored '+score+'%. Please retry.');S.cur=pass?'c':'a';render()}
+ W('mp_prog',a);pushProg();toast(pass?'Passed with '+score+'%':'Scored '+score+'%. Please retry.');S.cur=pass?'c':'a';render()}
 function certHTML(c,name,ce,emp){const k=c.cert,d=new Date(ce.date).toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
  const body=esc(k.body).split('{course}').join(esc(c.course)).split('{score}').join(ce.score);
  return `<div class="cert" style="border-color:${esc(k.color)}">${k.logo?`<img src="${k.logo}" alt="">`:''}<div class="org" style="color:${esc(k.color)}">${esc(k.org)}</div>
@@ -173,19 +183,19 @@ function adminV(u){if(!S.d)S.d=JSON.parse(JSON.stringify(C()));const D=S.d;let b
   <button class="btn s" onclick="expC()">Export course</button> <input type="file" accept=".json" onchange="impC(this)" style="margin-top:10px"><hr><b>Protect passwords (recommended)</b><p class="mu">Paste your users.csv here (with header). Plain passwords are converted to hashed form so they are not readable in the public file. Replace users.csv on GitHub with the downloaded file.</p>
   <textarea id="hin" rows="5" placeholder="userid,username,password,role&#10;admin,Administrator,Admin@123,admin"></textarea><button class="btn s" onclick="hashCsv()">Convert &amp; download users.csv</button></div></div>`;
  return hdr(u.name)+`<div style="max-width:1200px;margin:20px auto;padding:0 16px"><h2 style="color:var(--navy);margin-bottom:0">Admin Panel</h2><div class="tabs">${TABS.map(([k,l])=>`<button class="${S.tab===k?'on':''}" onclick="S.tab='${k}';render()">${l}</button>`).join('')}</div><div class="main">${b}</div></div>`}
-function dashV(){const us=U(),pr=P();let rows='',done=0,prog=0,none=0;
- Object.entries(us).filter(([k,v])=>v.role!=='admin').forEach(([id,v])=>{const s=stat(id),ce=pr[id]?.cert,b=Math.max(0,...(pr[id]?.tries||[]).map(t=>t.score));
+function dashV(){const us=U(),pr=S.all||P();let rows='',done=0,prog=0,none=0;
+ Object.entries(us).filter(([k,v])=>v.role!=='admin').forEach(([id,v])=>{const s=stat(id,pr),ce=pr[id]?.cert,b=Math.max(0,...(pr[id]?.tries||[]).map(t=>t.score));
   if(ce)done++;else if(s.n)prog++;else none++;
   rows+=`<tr><td>${esc(id)}</td><td>${esc(v.name)}</td><td>${s.n}/${s.t}</td><td>${pr[id]?.tries?.length?b+'%':'–'}</td><td><span class="tag ${ce?'t1':s.n?'t2':'t3'}">${ce?'Certified':s.n?'In progress':'Not started'}</span></td><td>${ce?new Date(ce.date).toLocaleDateString():'–'}</td>
   <td><button class="btn s sm" onclick="resetPr('${esc(id)}')">Reset progress</button></td></tr>`});
- return `<div class="cards" style="margin-top:0"><div class="card"><b>${done+prog+none}</b>Total learners</div><div class="card"><b style="color:var(--ok)">${done}</b>Completed &amp; certified</div><div class="card"><b>${prog}</b>In progress</div><div class="card"><b>${none}</b>Not started</div></div>
- <div class="row"><b style="flex:1">Learner progress</b><button class="btn s sm" onclick="csv()">Export CSV</button></div><div style="overflow:auto"><table><tr><th>User ID</th><th>Name</th><th>Sections</th><th>Best score</th><th>Status</th><th>Certified on</th><th>Actions</th></tr>${rows||'<tr><td colspan=7 class="mu">No learners yet.</td></tr>'}</table></div>
+ return `${SYNC?'':'<p class="err">⚠ Sync is not configured – progress is saved only in each device\'s own browser. See setup steps.</p>'}<div class="cards" style="margin-top:0"><div class="card"><b>${done+prog+none}</b>Total learners</div><div class="card"><b style="color:var(--ok)">${done}</b>Completed &amp; certified</div><div class="card"><b>${prog}</b>In progress</div><div class="card"><b>${none}</b>Not started</div></div>
+ <div class="row"><b style="flex:1">Learner progress</b><button class="btn s sm" onclick="S.all=null;render()">↻ Refresh</button> <button class="btn s sm" onclick="csv()">Export CSV</button></div><div style="overflow:auto"><table><tr><th>User ID</th><th>Name</th><th>Sections</th><th>Best score</th><th>Status</th><th>Certified on</th><th>Actions</th></tr>${rows||'<tr><td colspan=7 class="mu">No learners yet.</td></tr>'}</table></div>
  <p class="mu" style="margin-top:16px">Learner list comes from <b>users.csv</b> in your GitHub repo. To add, remove or change learners or passwords, edit that file and commit it.</p>`}
 function add(a){S.d[a].push(a==='sections'?{id:'s'+Date.now(),title:'New section',desc:'',src:'',mins:5}:{q:'',o:['','','',''],a:0});render()}
 function del(a,i){if(S.d[a].length<2)return toast('At least one is required');if(confirm('Delete?')){S.d[a].splice(i,1);render()}}
 function mv(a,i,d){const j=i+d,A=S.d[a];if(j<0||j>=A.length)return;[A[i],A[j]]=[A[j],A[i]];render()}
 function saveD(){const D=S.d;if(D.questions.some(q=>!q.q.trim()||!q.o[D.questions.indexOf(q)>-1?q.a:0]?.trim()))return toast('Fill all questions and the correct option');
- if(D.sections.some(s=>!s.title.trim()))return toast('Every section needs a title');W('mp_cfg',D);toast('Saved ✓')}
+ if(D.sections.some(s=>!s.title.trim()))return toast('Every section needs a title');W('mp_cfg',D);if(SYNC)api('POST',{a:'cfg',key:akey(),d:D}).then(r=>toast(r.ok?'Saved & published to all devices ✓':'Wrong sync key – not published')).catch(()=>toast('Saved locally; server unreachable'));else toast('Saved ✓ (this browser only)')}
 function logo(el){const f=el.files[0];if(!f)return;if(f.size>3e5)return toast('Logo too large (max 300 KB)');const r=new FileReader();r.onload=()=>{S.d.cert.logo=r.result;render()};r.readAsDataURL(f)}
 async function hashCsv(){const R=parseCSV(hin.value);if(R.length<2)return toast('Paste CSV including header row');const out=[R[0]];
  for(const r of R.slice(1)){if(r[2]&&!r[2].trim().startsWith('sha256:'))r[2]='sha256:'+await H(r[2].trim());out.push(r)}
@@ -194,11 +204,11 @@ function expC(){const a=document.createElement('a');a.href=URL.createObjectURL(n
 function impC(el){const f=el.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const c=JSON.parse(r.result);if(!c.sections||!c.questions)throw 0;S.d={...DEF,...c,cert:{...DEF.cert,...c.cert}};toast('Imported – click Save changes');render()}catch(e){toast('Invalid file')}};r.readAsText(f)}
 
 
-function resetPr(id){if(!confirm('Reset all progress for '+id+'?'))return;const a=P();delete a[id];W('mp_prog',a);render()}
+function resetPr(id){if(!confirm('Reset all progress for '+id+'?'))return;const a=P();delete a[id];W('mp_prog',a);if(SYNC)api('POST',{a:'prog',u:id,d:null,key:akey()}).then(()=>{S.all=null;render()});else render()}
 
 
-function csv(){const us=U(),pr=P(),L=[['UserID','Name','Sections done','Best score','Status','Certificate ID','Certified on']];
- Object.entries(us).filter(([k,v])=>v.role!=='admin').forEach(([id,v])=>{const s=stat(id),ce=pr[id]?.cert;L.push([id,v.name,s.n+'/'+s.t,Math.max(0,...(pr[id]?.tries||[]).map(t=>t.score)),ce?'Certified':s.n?'In progress':'Not started',ce?.id||'',ce?new Date(ce.date).toLocaleDateString():''])});
+function csv(){const us=U(),pr=S.all||P(),L=[['UserID','Name','Sections done','Best score','Status','Certificate ID','Certified on']];
+ Object.entries(us).filter(([k,v])=>v.role!=='admin').forEach(([id,v])=>{const s=stat(id,pr),ce=pr[id]?.cert;L.push([id,v.name,s.n+'/'+s.t,Math.max(0,...(pr[id]?.tries||[]).map(t=>t.score)),ce?'Certified':s.n?'In progress':'Not started',ce?.id||'',ce?new Date(ce.date).toLocaleDateString():''])});
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([L.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')).join('\n')],{type:'text/csv'}));a.download='training-report.csv';a.click()}
 boot();
 </script>
