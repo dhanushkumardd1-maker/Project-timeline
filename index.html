@@ -3,748 +3,188 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MPPL Employee Knowledge Hub – Project Tracker</title>
+<title>MICRO PLASTICS PRIVATE LIMITED – Training Portal</title>
 <style>
-/* ---------- Theme colours (change here to restyle) ---------- */
-:root{--navy:#0b2a4a;--blue:#2b7de9;--light:#eaf3ff;--line:#dbe6f3;--bg:#f6f9fd;--mute:#5b7089;--red:#d64545;--green:#1f9d62;--amber:#e39a1d;color-scheme:light}
-*{box-sizing:border-box}
-body{margin:0;display:flex;min-height:100vh;font-family:"Segoe UI",system-ui,Arial,sans-serif;color:var(--navy);background:var(--bg);font-size:14px}
-button,input,select,textarea{font:inherit;color:inherit}
-
-/* Sidebar */
-#side{width:230px;background:#fff;border-right:1px solid var(--line);padding:20px 14px;flex-shrink:0}
-#side h1{font-size:16px;line-height:1.35;margin:0 8px 22px;color:var(--navy)}
-#nav button{display:block;width:100%;text-align:left;border:0;background:none;padding:10px 12px;margin-bottom:2px;border-radius:8px;cursor:pointer;color:var(--mute);font-weight:500}
-#nav button:hover{background:var(--light)}
-#nav button.on{background:var(--light);color:var(--blue);font-weight:600}
-
-/* Main area */
-main{flex:1;min-width:0;padding:22px 26px}
-.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
-.top h2{margin:0;font-size:22px}
-.acts{display:flex;gap:8px;flex-wrap:wrap}
-.btn{border:1px solid var(--line);background:#fff;padding:8px 14px;border-radius:8px;cursor:pointer}
-.btn:hover{border-color:var(--blue)}
-.btn.pri{background:var(--blue);border-color:var(--blue);color:#fff}
-.btn.del{color:var(--red);border-color:#f0c4c4}
-.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
-.filters[hidden]{display:none}
-input,select,textarea{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:#fff;max-width:100%}
-.filters input{flex:1;min-width:180px}
-
-/* Cards & grids */
-.card2,.stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(11,42,74,.06)}
-.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:14px}
-.grid2{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-bottom:14px}
-.stat b{display:block;font-size:26px;margin-top:4px}
-.stat span,.mute{color:var(--mute);font-size:12px}
-h3{margin:0 0 12px;font-size:15px}
-.bar{height:8px;background:var(--light);border-radius:6px;overflow:hidden}
-.bar i{display:block;height:100%;background:var(--blue);border-radius:6px}
-.bar.g i{background:var(--green)}
-.list div{padding:8px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:8px}
-.list div:last-child{border:0}
-.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px}
-
-/* Kanban */
-.board{display:grid;grid-template-columns:repeat(4,minmax(240px,1fr));gap:12px;overflow-x:auto;align-items:start}
-.col{background:#eef4fb;border-radius:12px;padding:10px;min-height:200px}
-.col.over{outline:2px dashed var(--blue)}
-.col h4{margin:2px 4px 10px;font-size:12px;letter-spacing:.06em;color:var(--mute)}
-.tc{background:#fff;border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:10px;padding:10px;margin-bottom:8px;cursor:grab;box-shadow:0 1px 2px rgba(11,42,74,.06)}
-.tc.od{border-left-color:var(--red);background:#fff8f8}
-.tc .t{font-weight:600;margin:6px 0}
-.row{display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}
-.sm{font-size:12px;color:var(--mute)}
-.pill{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--light);color:var(--blue);font-weight:600}
-.pill.H{background:#fde8e8;color:var(--red)}.pill.M{background:#fff3dc;color:#b87708}.pill.L{background:#e3f6ec;color:var(--green)}
-.pill.od{background:var(--red);color:#fff}
-
-/* Table */
-.tw{overflow-x:auto;background:#fff;border:1px solid var(--line);border-radius:12px}
-table{width:100%;border-collapse:collapse;min-width:720px}
-th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
-th{font-size:12px;color:var(--mute);background:#f9fbfe}
-tr.cl{cursor:pointer}tr.cl:hover{background:var(--light)}
-td input{width:110px}
-
-/* Timeline */
-.tl{border-left:3px solid var(--line);margin-left:8px;padding-left:20px}
-.tl>div{position:relative;margin-bottom:18px}
-.tl>div:before{content:"";position:absolute;left:-29px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--blue);border:2px solid #fff}
-
-/* Donut */
-.donut{width:130px;height:130px;border-radius:50%;display:grid;place-items:center;margin:auto}
-.donut span{background:#fff;width:92px;height:92px;border-radius:50%;display:grid;place-items:center;font-size:22px;font-weight:700}
-
-/* Modal */
-.ov{position:fixed;inset:0;background:rgba(11,42,74,.45);display:flex;justify-content:center;align-items:flex-start;padding:24px 12px;overflow:auto;z-index:10}
-.ov[hidden]{display:none}
-.mod{background:#fff;border-radius:14px;padding:20px;width:100%;max-width:720px}
-.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.fg label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mute)}
-.fg .w{grid-column:1/-1}
-.chk{display:flex;gap:8px;align-items:center;padding:4px 0}
-.chk.d span{text-decoration:line-through;color:var(--mute)}
-
-.warn{background:#fff3dc;color:#8a5a00;border:1px solid #f0d9a6;padding:9px 12px;border-radius:8px;margin-bottom:12px;cursor:pointer;font-size:13px}
-.warn[hidden]{display:none}
-.badge{font-size:12px;padding:6px 10px;border-radius:20px;background:var(--light);color:var(--blue);font-weight:600;align-self:center}
-.viewer .adm{display:none}
-.viewer .tc{cursor:pointer}
-/* Responsive */
-@media(max-width:900px){
- body{flex-direction:column}
- #side{width:100%;padding:10px;border-right:0;border-bottom:1px solid var(--line)}
- #side h1{margin:0 4px 8px}
- #nav{display:flex;overflow-x:auto;gap:4px}
- #nav button{width:auto;white-space:nowrap}
- main{padding:14px}
- .fg{grid-template-columns:1fr}
-}
-
+:root{--navy:#0b2545;--teal:#13a89e;--bg:#f4f7fa;--card:#fff;--tx:#1b2733;--mu:#667785;--bd:#dde5ec;--ok:#1e9e5a;--er:#d64545}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--tx)}
+button{font:inherit;cursor:pointer}.btn{background:var(--teal);color:#fff;border:0;padding:10px 18px;border-radius:8px;font-weight:600}.btn:hover{filter:brightness(.93)}.btn:disabled{background:#b9c4cc;cursor:not-allowed}
+.btn.s{background:#fff;color:var(--navy);border:1px solid var(--bd)}.btn.d{background:var(--er)}.btn.sm{padding:5px 10px;font-size:12px}
+input,textarea,select{width:100%;padding:10px 12px;border:1px solid var(--bd);border-radius:8px;font:inherit;margin:4px 0 12px;background:#fff}
+label.l{font-size:13px;font-weight:600;color:var(--mu)}
+header{background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:12px 24px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.5px}.logo i{width:34px;height:34px;border-radius:50%;background:var(--teal);display:grid;place-items:center;font-style:normal;color:#fff}
+.login{min-height:100vh;display:grid;grid-template-columns:1.1fr 1fr}.hero{background:linear-gradient(150deg,var(--navy),#134e6f);color:#fff;padding:60px;display:flex;flex-direction:column;justify-content:center}
+.hero h1{font-size:34px;margin:18px 0 8px}.hero p{opacity:.85;max-width:420px;line-height:1.6}.hero li{margin:8px 0;opacity:.9}
+.lbox{display:flex;align-items:center;justify-content:center;padding:30px}.lbox form{width:100%;max-width:360px;background:var(--card);padding:32px;border-radius:14px;box-shadow:0 8px 30px #0b25451a}
+.err{color:var(--er);font-size:13px;min-height:18px;margin-bottom:8px}
+.wrap{display:grid;grid-template-columns:300px 1fr;gap:20px;max-width:1200px;margin:20px auto;padding:0 16px}
+.side,.main{background:var(--card);border-radius:12px;border:1px solid var(--bd);padding:18px}
+.bar{height:8px;background:#e6edf2;border-radius:6px;overflow:hidden;margin:8px 0 16px}.bar b{display:block;height:100%;background:var(--teal)}
+.item{display:flex;gap:10px;align-items:center;padding:11px 10px;border-radius:8px;cursor:pointer;font-size:14px;border:1px solid transparent}
+.item:hover{background:var(--bg)}.item.on{background:#e8f7f6;border-color:var(--teal)}.item.lk{opacity:.45;cursor:not-allowed}
+.dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--bd);display:grid;place-items:center;font-size:11px;flex:none}.dot.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+video,iframe.v{width:100%;aspect-ratio:16/9;border-radius:10px;background:#000;border:0}
+.mu{color:var(--mu);font-size:14px}.q{border:1px solid var(--bd);border-radius:10px;padding:14px;margin:12px 0}.q label{display:block;padding:6px 0;cursor:pointer}.q input[type=radio]{width:auto;margin:0 8px 0 0}
+.timer{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--bg);border-radius:10px;padding:12px 16px;margin:12px 0}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px}.card b{font-size:28px;display:block;color:var(--navy)}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--bd)}th{background:var(--bg)}
+.tag{padding:2px 9px;border-radius:12px;font-size:12px;font-weight:600}.t1{background:#dff5e9;color:var(--ok)}.t2{background:#fff3d6;color:#a46b00}.t3{background:#eef1f4;color:var(--mu)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}.tabs button{border:1px solid var(--bd);background:#fff;padding:9px 16px;border-radius:8px;font-weight:600;color:var(--navy)}.tabs button.on{background:var(--navy);color:#fff}
+.ed{border:1px solid var(--bd);border-radius:10px;padding:14px;margin:12px 0;background:#fcfdfe}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cert{border:10px double var(--navy);padding:36px;text-align:center;background:#fff}.cert img{max-height:70px;margin-bottom:6px}.cert h1{font-family:Georgia,serif;font-size:36px;margin:8px 0}.cert h2{font-family:Georgia,serif;font-size:30px;border-bottom:2px solid var(--teal);display:inline-block;padding:0 24px 4px;margin:10px 0}
+.cert .org{font-weight:700;letter-spacing:1px}.cert .sg{margin:34px auto 10px;width:240px;border-top:1px solid #333;padding-top:6px;font-size:14px}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--navy);color:#fff;padding:12px 18px;border-radius:8px;z-index:9}
+@media(max-width:800px){.login,.wrap,.g2{grid-template-columns:1fr}.hero{padding:30px}.cards{grid-template-columns:1fr 1fr}}
+@media print{body *{visibility:hidden}.cert,.cert *{visibility:visible}.cert{position:absolute;left:0;top:0;width:100%}}
 </style>
 </head>
 <body>
-<!-- Left sidebar navigation -->
-<aside id="side">
-  <h1 id="pname"></h1>
-  <select id="psel" onchange="switchP(this.value)" style="width:100%;margin:0 0 14px"></select>
-  <nav id="nav"></nav>
-</aside>
-
-<main>
-  <!-- Top bar: page title + global actions -->
-  <header class="top">
-    <h2 id="ttl"></h2>
-    <div class="acts" id="acts"></div>
-    <input type="file" id="impx" accept=".xlsx,.xls,.csv" hidden onchange="importExcel(this)">
-    <input type="file" id="imp" accept=".json" hidden onchange="importData(this)">
-  </header>
-
-  <!-- Search + filters (shown on Kanban and Tasks pages) -->
-  <div id="warn" class="warn" hidden onclick="syncBox()">⚠ Auto-save to the shared database is OFF – changes stay only on this device. Click here to connect (admin: put the URL in DEFAULT_SYNC inside the file).</div>
-  <div id="filters" class="filters">
-    <input id="q" placeholder="Search tasks..." oninput="applyF()">
-    <select id="fst" onchange="applyF()"></select>
-    <select id="fpr" onchange="applyF()"></select>
-    <select id="fas" onchange="applyF()"></select>
-    <select id="fcat" onchange="applyF()"></select>
-    <select id="fdue" onchange="applyF()">
-      <option value="">Any due date</option>
-      <option value="overdue">Overdue</option>
-      <option value="week">Next 7 days</option>
-      <option value="month">Next 30 days</option>
-    </select>
-    <button class="btn" onclick="clearF()">Clear</button>
-  </div>
-
-  <section id="view"></section>
-</main>
-
-<!-- Add / Edit task popup -->
-<div id="modal" class="ov" hidden><div class="mod" id="mbody"></div></div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<div id="app"></div>
 <script>
-'use strict';
-/* =====================================================
-   MPPL Employee Knowledge Hub – Project Tracker
-   Everything is stored in the browser (LocalStorage).
-   ===================================================== */
+/* Default content. Everything below can be edited from the Admin login (Sections / Questions / Certificate tabs). */
+const DEF={course:"Plastics Safety & Quality Induction",passMark:70,
+ sections:[
+  {id:"s1",title:"Introduction to Plastics & Microplastics",desc:"Company overview and polymer types.",src:"",mins:5},
+  {id:"s2",title:"Workplace Safety & PPE",desc:"Hazards, PPE and emergency response.",src:"",mins:5}],
+ questions:[
+  {q:"What is the primary purpose of PPE?",o:["Looks professional","Protects workers from hazards","Reduces production time","Marks seniority"],a:1},
+  {q:"Microplastics are generally smaller than:",o:["5 mm","5 cm","50 cm","1 m"],a:0}],
+ cert:{org:"MICRO PLASTICS PRIVATE LIMITED",title:"Certificate of Completion",sub:"This is to certify that",body:"has successfully completed the training programme {course} with a score of {score}%.",sign:"Authorised Signatory",desig:"Head – HR & Training",footer:"This certificate is system generated and can be verified using the Certificate ID.",color:"#0b2545",logo:""}};
+const J=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}};
+const W=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+/* Data layer – swap these for Firebase/Supabase to share data across devices */
+const C=()=>{const s=J('mp_cfg',{});return{...DEF,...s,cert:{...DEF.cert,...(s.cert||{})}}},U=()=>J('mp_users',{}),P=()=>J('mp_prog',{});
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function H(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('mpl|'+s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+let S={u:sessionStorage.getItem('mp_s'),cur:0,fail:0,lock:0,tab:'d',d:null,iv:null};
+const $a=h=>document.getElementById('app').innerHTML=h;
+async function boot(){const u=U();if(!u.admin){u.admin={name:'Administrator',role:'admin',h:await H('Admin@123')};W('mp_users',u)}render()}
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),2500)}
+const hdr=n=>`<header><div class="logo"><i>M</i>MICRO PLASTICS PVT LTD</div><div>${n?esc(n)+' &nbsp; <button class="btn s sm" onclick="logout()">Logout</button>':''}</div></header>`;
+function render(){clearInterval(S.iv);const u=U()[S.u];
+ if(!u){S.u=null;sessionStorage.removeItem('mp_s');return $a(loginV())}
+ if(u.role==='admin')return $a(adminV(u));
+ $a(learnerV(u));if(typeof S.cur==='number')mountMedia()}
 
-/* ---------- 1. Constants ---------- */
-const KEY = 'mppl_hub_v1';
-const CATS = ['Planning & Approval','Infrastructure','Book Procurement','Library Setup','Employee Awareness','Launch'];
-const ST = {todo:'To Do', prog:'In Progress', review:'Review', done:'Done'};
-const PR = {H:'High', M:'Medium', L:'Low'};
-const VIEWS = ['Dashboard','Kanban Board','Tasks','Timeline','Budget','Reports','Settings'];
+/* ---------- LOGIN ---------- */
+function loginV(){return `<div class="login"><div class="hero"><div class="logo" style="font-size:20px"><i>M</i>MICRO PLASTICS PRIVATE LIMITED</div>
+<h1>Employee Training Portal</h1><p>Complete your section-wise training videos, pass the final assessment and download your certificate.</p>
+<ul><li>▶ Sequential video modules</li><li>✔ Final assessment (pass mark ${C().passMark}%)</li><li>🎓 Certificate on completion</li></ul></div>
+<div class="lbox"><form onsubmit="login(event)"><h2 style="margin-top:0;color:var(--navy)">Sign in</h2><label class="l">User ID</label><input id="uid" autocomplete="username" required>
+<label class="l">Password</label><input id="pw" type="password" autocomplete="current-password" required><div class="err" id="er"></div><button class="btn" style="width:100%">Login</button>
+<p class="mu" style="text-align:center">Forgot password? Contact your administrator.</p></form></div></div>`}
+async function login(e){e.preventDefault();const er=document.getElementById('er');
+ if(Date.now()<S.lock)return er.textContent='Too many attempts. Wait '+Math.ceil((S.lock-Date.now())/1000)+'s.';
+ const id=uid.value.trim().toLowerCase(),u=U()[id];
+ if(u&&u.h===await H(pw.value)){S.u=id;S.fail=0;S.cur=0;S.tab='d';S.d=null;sessionStorage.setItem('mp_s',id);render()}
+ else{if(++S.fail>=5){S.lock=Date.now()+30000;S.fail=0}er.textContent='Invalid User ID or password.'}}
+function logout(){S.u=null;S.d=null;sessionStorage.removeItem('mp_s');render()}
 
-// Starting tasks: title | category index | due date | priority
-const SEED = `Get room confirmation from Admin|0|2026-10-08|H
-Finalize library layout|0|2026-10-09|M
-Finalize furniture requirement|0|2026-10-09|M
-Confirm project budget|0|2026-10-09|H
-Get quotation for tables and chairs|1|2026-10-12|M
-Get quotation for book rack|1|2026-10-12|M
-Finalize name board|1|2026-10-14|L
-Complete room setup|1|2026-10-23|H
-Finalize book list|2|2026-10-08|H
-Verify ISBN and publisher details|2|2026-10-10|M
-Send book list to vendor|2|2026-10-12|M
-Get vendor quotation|2|2026-10-15|M
-Compare quotations|2|2026-10-16|M
-Obtain purchase approval|2|2026-10-17|H
-Purchase books|2|2026-10-20|H
-Receive and verify books|2|2026-10-24|H
-Arrange furniture|3|2026-10-25|M
-Arrange books category-wise|3|2026-10-26|M
-Prepare library rules|3|2026-10-22|L
-Prepare book issue/return process|3|2026-10-22|M
-Display library guidelines|3|2026-10-27|L
-Prepare awareness poster|4|2026-10-26|M
-Prepare employee communication|4|2026-10-26|M
-Plan library inauguration|5|2026-10-28|M
-Launch Employee Knowledge Hub|5|2026-10-30|H
-Collect employee feedback|5|2026-10-31|L`;
+/* ---------- MEDIA ---------- */
+function embed(src){src=src||'';const d=src.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([\w-]+)/)||(/drive\.google/.test(src)&&src.match(/[?&]id=([\w-]+)/));
+ if(d)return{f:1,u:`https://drive.google.com/file/d/${d[1]}/preview`};
+ const y=src.match(/(?:v=|youtu\.be\/|embed\/)([\w-]{11})/);if(y)return{f:1,u:`https://www.youtube.com/embed/${y[1]}?rel=0`};
+ return{f:0,u:src}}
+function saveWatch(id,w){const a=P();a[S.u]=a[S.u]||{done:{}};a[S.u].watch=a[S.u].watch||{};a[S.u].watch[id]=w;W('mp_prog',a)}
+function mountMedia(){const s=C().sections[S.cur];if(!s||P()[S.u]?.done?.[s.id])return;
+ if(embed(s.src).f){const need=(s.mins||1)*60;let w=P()[S.u]?.watch?.[s.id]||0;
+  const tick=()=>{const left=Math.max(0,need-w),t=document.getElementById('tm'),b=document.getElementById('mk');if(!t)return;
+   t.textContent=left?`Time remaining: ${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}`:'✓ You may now complete this section';b.disabled=left>0};
+  tick();S.iv=setInterval(()=>{if(document.visibilityState!=='visible')return;if(w<need)w++;if(w%5===0||w>=need)saveWatch(s.id,w);tick()},1000)}
+ else{const v=document.getElementById('vid');let mx=0;
+  v.ontimeupdate=()=>{if(!v.seeking&&v.currentTime>mx)mx=v.currentTime};v.onseeking=()=>{if(v.currentTime>mx+1)v.currentTime=mx};v.onended=mark;
+  v.onerror=()=>document.getElementById('vmsg').textContent='Video could not be loaded. Please inform the administrator.'}}
 
-/* ---------- 2. Small helpers ---------- */
-const $ = s => document.querySelector(s);
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const today = () => { const d = new Date(); return new Date(d - d.getTimezoneOffset()*6e4).toISOString().slice(0,10); };
-const now = () => new Date().toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
-const fd = d => d ? new Date(d+'T00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) : '—';
-const inr = n => '₹' + Math.round(n||0).toLocaleString('en-IN');
-const pct = (a,b) => b ? Math.round(a/b*100) : 0;
-const isOd = t => t.status !== 'done' && t.due && t.due < today();
+/* ---------- LEARNER ---------- */
+function stat(id){const c=C(),p=P()[id]||{done:{}},n=c.sections.filter(s=>p.done?.[s.id]).length;return{n,t:c.sections.length,all:n===c.sections.length,p}}
+function learnerV(u){const c=C(),{n,t,all,p}=stat(S.u),pct=Math.round(n/t*100);
+ const items=c.sections.map((s,i)=>{const ok=p.done?.[s.id],lk=i>0&&!p.done?.[c.sections[i-1].id]&&!ok;
+  return `<div class="item ${S.cur===i?'on':''} ${lk?'lk':''}" onclick="go(${i})"><span class="dot ${ok?'ok':''}">${ok?'✓':i+1}</span>${esc(s.title)}</div>`}).join('');
+ const as=`<div class="item ${S.cur==='a'?'on':''} ${all?'':'lk'}" onclick="go('a')"><span class="dot ${p.cert?'ok':''}">${p.cert?'✓':'★'}</span>Final Assessment</div>
+ <div class="item ${S.cur==='c'?'on':''} ${p.cert?'':'lk'}" onclick="go('c')"><span class="dot">🎓</span>Certificate</div>`;
+ let m='';
+ if(typeof S.cur==='number'){const s=c.sections[S.cur],ok=p.done?.[s.id],e=embed(s.src),nx=S.cur+1<t?S.cur+1:"'a'";
+  m=`<h2 style="margin-top:0">${S.cur+1}. ${esc(s.title)}</h2><p class="mu">${esc(s.desc)}</p>
+  ${!s.src?'<p class="err">Video not added yet by the administrator.</p>':e.f?`<iframe class="v" src="${esc(e.u)}" allow="autoplay;fullscreen" allowfullscreen></iframe>`:`<video id="vid" controls controlsList="nodownload noplaybackrate" disablePictureInPicture oncontextmenu="return false" src="${esc(e.u)}"></video>`}
+  ${ok?`<p class="mu">✓ Completed</p><button class="btn" onclick="go(${nx})">Next →</button>`
+   :e.f?`<div class="timer"><span id="tm"></span><button class="btn" id="mk" disabled onclick="mark()">Mark section complete</button></div><p class="mu">Play the video above. The timer runs only while this tab is open and visible.</p>`
+   :`<p class="mu" id="vmsg">Watch the full video to complete this section. Skipping ahead is disabled.</p>`}`}
+ else if(S.cur==='a')m=assessV(c,p);
+ else if(S.cur==='c'&&p.cert)m=`${certHTML(c,u.name,p.cert,S.u)}<p><button class="btn" onclick="print()">Print / Save as PDF</button></p>`;
+ return hdr(u.name)+`<div class="wrap"><aside class="side"><b>${esc(c.course)}</b><div class="bar"><b style="width:${pct}%"></b></div><div class="mu" style="margin:-8px 0 12px">${n}/${t} sections · ${pct}%</div>${items}${as}</aside><main class="main">${m}</main></div>`}
+function go(i){const c=C(),p=P()[S.u]||{done:{}};
+ if(typeof i==='number'&&i>0&&!p.done?.[c.sections[i-1].id]&&!p.done?.[c.sections[i].id])return;
+ if(i==='a'&&!stat(S.u).all)return;if(i==='c'&&!p.cert)return;S.cur=i;render()}
+function mark(){const s=C().sections[S.cur],a=P();a[S.u]=a[S.u]||{done:{}};if(a[S.u].done[s.id])return;a[S.u].done[s.id]=Date.now();W('mp_prog',a);toast('Section completed ✓');render()}
+function assessV(c,p){const best=Math.max(0,...(p.tries||[]).map(t=>t.score));
+ if(p.cert)return `<h2 style="margin-top:0">Assessment passed ✓</h2><p>Best score: <b>${best}%</b>.</p><button class="btn" onclick="go('c')">View Certificate</button>`;
+ return `<h2 style="margin-top:0">Final Assessment</h2><p class="mu">${c.questions.length} questions · Pass mark ${c.passMark}% · Unlimited attempts${p.tries?.length?` · Last: ${p.tries.at(-1).score}%`:''}</p>
+ <form onsubmit="submitA(event)">${c.questions.map((q,i)=>`<div class="q"><b>${i+1}. ${esc(q.q)}</b>${q.o.filter(o=>o).map(o=>[o,q.o.indexOf(o)]).map(([o,j])=>`<label><input type="radio" name="q${i}" value="${j}" required>${esc(o)}</label>`).join('')}</div>`).join('')}<button class="btn">Submit Assessment</button></form>`}
+function submitA(e){e.preventDefault();const c=C(),f=new FormData(e.target);let r=0;c.questions.forEach((q,i)=>{if(+f.get('q'+i)===q.a)r++});
+ const score=Math.round(r/c.questions.length*100),a=P();a[S.u].tries=a[S.u].tries||[];a[S.u].tries.push({score,date:Date.now()});
+ const pass=score>=c.passMark;if(pass)a[S.u].cert={id:'MPPL-'+new Date().getFullYear()+'-'+crypto.getRandomValues(new Uint32Array(1))[0].toString(16).toUpperCase().slice(0,6),date:Date.now(),score};
+ W('mp_prog',a);toast(pass?'Passed with '+score+'%':'Scored '+score+'%. Please retry.');S.cur=pass?'c':'a';render()}
+function certHTML(c,name,ce,emp){const k=c.cert,d=new Date(ce.date).toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
+ const body=esc(k.body).split('{course}').join(esc(c.course)).split('{score}').join(ce.score);
+ return `<div class="cert" style="border-color:${esc(k.color)}">${k.logo?`<img src="${k.logo}" alt="">`:''}<div class="org" style="color:${esc(k.color)}">${esc(k.org)}</div>
+ <h1 style="color:${esc(k.color)}">${esc(k.title)}</h1><p>${esc(k.sub)}</p><h2>${esc(name)}</h2><p>${body}</p>
+ <div class="sg"><b>${esc(k.sign)}</b><br><small>${esc(k.desig)}</small></div>
+ <p class="mu">Date: ${d} &nbsp;|&nbsp; Certificate ID: ${esc(ce.id)} &nbsp;|&nbsp; Employee ID: ${esc(emp)}</p><p class="mu" style="font-size:12px">${esc(k.footer)}</p></div>`}
 
-/* ---------- 3. Data (state) ---------- */
-function mk(o){ // build a task with defaults
-  return Object.assign({mod:Date.now(), desc:'',as:'HR – L&D',status:'todo',progress:0,checklist:[],comments:[],att:'',
-    history:[{t:'Task created',at:now()}]}, o);
-}
-function fresh(){
-  const tasks = SEED.split('\n').map((l,i) => {
-    const [title,c,due,p] = l.split('|');
-    return mk({id:'T-'+String(i+1).padStart(2,'0'), title, cat:CATS[c], due, pri:p, mod:0});
-  });
-  tasks[0].status = 'prog'; tasks[0].progress = 30;
-  return {
-    tasks, log:[],
-    people:['HR – L&D','Admin','Procurement','Finance'],
-    proj:{owner:'HR – L&D', target:'October 2026', budget:50000, location:'Admin Area near Conference Room', capacity:'4 Employees'},
-    budget:['Tables & Chairs','Book Rack','Books','Name Board','Other'].map(n => ({name:n, est:0, act:0}))
-  };
-}
-const KEY2 = 'mppl_hub_v2';
-// Simple PIN scrambler (a basic lock, not strong security)
-function hs(s){ s = 'mppl' + s; let a = 0xdeadbeef, b = 0x41c6ce57;
-  for (let i = 0, c; i < s.length; i++){ c = s.charCodeAt(i); a = Math.imul(a ^ c, 2654435761); b = Math.imul(b ^ c, 1597334677); }
-  a = Math.imul(a ^ (a >>> 16), 2246822507) ^ Math.imul(b ^ (b >>> 13), 3266489909);
-  b = Math.imul(b ^ (b >>> 16), 2246822507) ^ Math.imul(a ^ (a >>> 13), 3266489909);
-  return (4294967296 * (2097151 & b) + (a >>> 0)).toString(36); }
-function loadDB(){
-  try { const d = JSON.parse(localStorage.getItem(KEY2)); if (d && d.projects) return d; } catch(e){}
-  let old = null; try { old = JSON.parse(localStorage.getItem(KEY)); } catch(e){}   // upgrade from the first version
-  const data = (old && old.tasks) ? old : fresh(); const pin = (old && old.pin) || '1234'; delete data.pin;
-  return {users:[{name:'admin', pin:hs(pin), sa:true}], cur:'p1', updated:0,
-          projects:[{id:'p1', name:'MPPL Employee Knowledge Hub', members:{}, data}]};
-}
-function persist(){ try { localStorage.setItem(KEY2, JSON.stringify(DB)); } catch(e){} }
-function save(){ DB.updated = Date.now(); persist(); dirty = true; clearTimeout(timer); timer = setTimeout(sync, 400); }
-let DB = loadDB(), S, user = null, admin = false, isAdm = false;
-// admin = can edit tasks (editor or admin) | isAdm = project admin | SA() = super admin
-// ===== ONE-TIME SETUP: paste your Firebase database URL between the quotes below, then upload this file to GitHub. =====
-// After that, everyone who opens the GitHub link loads the latest data and every change is saved automatically.
-const DEFAULT_SYNC = '';
-let SYNC = '', syncMsg = '⚪ Sync not connected', busy = false, timer = null, dirty = false, stale = false;
-try {
-  const m = location.hash.match(/sync=([^&]+)/);            // phone link: index.html#sync=<url>
-  if (m){ localStorage.setItem('mppl_sync', decodeURIComponent(m[1])); history.replaceState(null, '', location.pathname + location.search); }
-  SYNC = localStorage.getItem('mppl_sync') || DEFAULT_SYNC;
-} catch(e){ SYNC = DEFAULT_SYNC; }
-const P = () => DB.projects.find(p => p.id === DB.cur) || DB.projects[0];
-const SA = () => !!(user && user.sa);
-function setS(x){ S = x; P().data = x; }
-function roles(){
-  const r = !user ? 'viewer' : user.sa ? 'admin' : (P().members[user.name] || 'viewer');
-  isAdm = r === 'admin'; admin = r === 'admin' || r === 'editor';
-}
-function attach(){   // point S at the current project and work out the logged-in user's role
-  if (!DB.projects.find(p => p.id === DB.cur)) DB.cur = DB.projects[0].id;
-  S = P().data;
-  let n = null; try { n = sessionStorage.getItem('mppl_user'); } catch(e){}
-  user = DB.users.find(u => u.name === n) || null;
-  roles();
-}
-let view = 'Dashboard';
-let F = {};
-
-// Record an activity on a task (and in the global recent-activity list)
-function log(t, msg){
-  t.history.unshift({t:msg, at:now()}); t.mod = Date.now();
-  S.log.unshift({t:t.id+' · '+msg, at:now()});
-  S.log.length = Math.min(S.log.length, 30);
-}
-
-/* ---------- 4. Filters ---------- */
-function fillSelect(id, label, opts){
-  const el = $('#'+id), v = el.value;
-  el.innerHTML = `<option value="">${label}</option>` + opts.map(([k,n]) => `<option value="${esc(k)}">${esc(n)}</option>`).join('');
-  el.value = v;
-}
-function setupFilters(){
-  fillSelect('fst','All statuses',Object.entries(ST));
-  fillSelect('fpr','All priorities',Object.entries(PR));
-  const people = [...new Set([...S.people, ...S.tasks.map(t => t.as)])];
-  fillSelect('fas','All assignees',people.map(p => [p,p]));
-  fillSelect('fcat','All categories',CATS.map(c => [c,c]));
-}
-function applyF(){ render(); }
-function clearF(){ ['q','fst','fpr','fas','fcat','fdue'].forEach(i => $('#'+i).value=''); render(); }
-function filtered(){
-  const q = $('#q').value.toLowerCase(), st=$('#fst').value, pr=$('#fpr').value, as=$('#fas').value, cat=$('#fcat').value, du=$('#fdue').value;
-  const t0 = today(), d7 = addDays(7), d30 = addDays(30);
-  return S.tasks.filter(t =>
-    (!q || (t.title+' '+t.id+' '+t.desc+' '+t.as).toLowerCase().includes(q)) &&
-    (!st || t.status===st) && (!pr || t.pri===pr) && (!as || t.as===as) && (!cat || t.cat===cat) &&
-    (!du || (du==='overdue' && isOd(t)) || (du==='week' && t.due>=t0 && t.due<=d7) || (du==='month' && t.due>=t0 && t.due<=d30)));
-}
-function addDays(n){ const d = new Date(); d.setDate(d.getDate()+n); return new Date(d - d.getTimezoneOffset()*6e4).toISOString().slice(0,10); }
-
-/* ---------- 5. Reusable HTML pieces ---------- */
-const bar = (p, cls='') => `<div class="bar ${cls}"><i style="width:${p}%"></i></div>`;
-const stat = (l,v) => `<div class="stat"><span>${l}</span><b>${v}</b></div>`;
-const upcoming = () => S.tasks.filter(t => t.status!=='done').sort((a,b) => a.due.localeCompare(b.due));
-const dlist = (arr) => arr.length ? arr.map(t => `<div onclick="openT('${t.id}')" style="cursor:pointer"><span>${esc(t.title)}</span><span class="${isOd(t)?'pill od':'sm'}">${fd(t.due)}</span></div>`).join('') : '<p class="mute">Nothing here 🎉</p>';
-
-function card(t){
-  const od = isOd(t);
-  return `<div class="tc ${od?'od':''}" draggable="${admin}" data-id="${t.id}" onclick="openT('${t.id}')">
-    <div class="row"><span class="sm">${t.id}</span><span class="pill ${t.pri}">${PR[t.pri]}</span></div>
-    <div class="t">${esc(t.title)}</div>
-    <div class="row"><span class="pill">${esc(t.cat)}</span><span class="sm">${ST[t.status]}</span></div>
-    <div style="margin:8px 0 4px">${bar(t.progress)}</div>
-    <div class="row sm"><span>👤 ${esc(t.as)} · ${t.progress}%</span><span>${od?'<span class="pill od">Overdue</span> ':''}${fd(t.due)}</span></div>
-  </div>`;
-}
-
-/* ---------- 6. Pages ---------- */
-const PAGES = {
-  Dashboard(){
-    const T = S.tasks, c = k => T.filter(t => t.status===k).length, od = T.filter(isOd).length, p = pct(c('done'), T.length);
-    const P = S.proj;
-    return `<div class="grid">${stat('Total Tasks',T.length)}${stat('To Do',c('todo'))}${stat('In Progress',c('prog'))}${stat('Review',c('review'))}${stat('Completed',c('done'))}${stat('Overdue',`<span style="color:var(--red)">${od}</span>`)}</div>
-    <div class="grid2">
-      <div class="card2"><h3>Overall Project Progress – ${p}%</h3>${bar(p,'g')}<p class="mute">${c('done')} of ${T.length} tasks completed</p>
-        <div class="kv"><span class="mute">Target</span><b>${esc(P.target)}</b><span class="mute">Budget</span><b>${inr(P.budget)}</b><span class="mute">Owner</span><b>${esc(P.owner)}</b><span class="mute">Location</span><span>${esc(P.location)}</span><span class="mute">Capacity</span><span>${esc(P.capacity)}</span></div></div>
-      <div class="card2"><h3>Upcoming Deadlines</h3><div class="list">${dlist(upcoming().slice(0,6))}</div></div>
-      <div class="card2"><h3>Recent Activities</h3><div class="list">${S.log.slice(0,8).map(a => `<div><span>${esc(a.t)}</span><span class="sm">${a.at}</span></div>`).join('') || '<p class="mute">No activity yet. Move or edit a task.</p>'}</div></div>
-    </div>`;
-  },
-  'Kanban Board'(){
-    const L = filtered();
-    return `<div class="board">${Object.entries(ST).map(([k,n]) => {
-      const col = L.filter(t => t.status===k);
-      return `<div class="col" data-s="${k}"><h4>${n.toUpperCase()} · ${col.length}</h4>${col.map(card).join('')}</div>`;
-    }).join('')}</div>`;
-  },
-  Tasks(){
-    const L = filtered();
-    return `<div class="tw"><table><tr><th>ID</th><th>Task</th><th>Category</th><th>Assignee</th><th>Priority</th><th>Status</th><th>Due</th><th>Progress</th></tr>
-    ${L.map(t => `<tr class="cl" onclick="openT('${t.id}')"><td>${t.id}</td><td>${esc(t.title)}</td><td>${esc(t.cat)}</td><td>${esc(t.as)}</td><td><span class="pill ${t.pri}">${PR[t.pri]}</span></td><td>${ST[t.status]}</td><td>${isOd(t)?'<span class="pill od">Overdue</span> ':''}${fd(t.due)}</td><td>${t.progress}%</td></tr>`).join('') || '<tr><td colspan="8">No tasks match.</td></tr>'}</table></div>`;
-  },
-  Timeline(){
-    const steps = [['Week 1','Planning & room confirmation',['Planning & Approval']],['Week 2','Quotation & approval',['Infrastructure']],
-      ['Week 3','Furniture and book procurement',['Book Procurement']],['Week 4','Setup and employee awareness',['Library Setup','Employee Awareness']],
-      ['Launch','Employee Knowledge Hub inauguration',['Launch']]];
-    return `<div class="card2"><div class="tl">${steps.map(([w,d,cs]) => {
-      const L = S.tasks.filter(t => cs.includes(t.cat)), p = pct(L.filter(t => t.status==='done').length, L.length);
-      return `<div><b>${w}</b> – ${d}<div class="sm">${cs.join(', ')} · ${L.length} tasks · ${p}% done</div><div style="max-width:320px;margin-top:6px">${bar(p,'g')}</div></div>`;
-    }).join('')}</div></div>`;
-  },
-  Budget(){
-    const B = S.budget, est = B.reduce((a,b) => a+b.est,0), act = B.reduce((a,b) => a+b.act,0), tot = +S.proj.budget;
-    return `<div class="grid">${stat('Total Budget',inr(tot))}${stat('Total Estimated',inr(est))}${stat('Total Actual',inr(act))}${stat('Remaining',`<span style="color:${tot-act<0?'var(--red)':'var(--green)'}">${inr(tot-act)}</span>`)}${stat('Utilization',pct(act,tot)+'%')}</div>
-    <div class="card2">${bar(Math.min(100,pct(act,tot)))}<br><div class="tw"><table><tr><th>Category</th><th>Estimated (₹)</th><th>Actual (₹)</th></tr>
-    ${B.map((b,i) => `<tr><td>${esc(b.name)}</td><td><input type="number" min="0" ${admin?'':'disabled'} value="${b.est}" onchange="setB(${i},'est',this.value)"></td><td><input type="number" min="0" ${admin?'':'disabled'} value="${b.act}" onchange="setB(${i},'act',this.value)"></td></tr>`).join('')}</table></div></div>`;
-  },
-  Reports(){
-    const T = S.tasks, done = T.filter(t => t.status==='done').length, p = pct(done,T.length), act = S.budget.reduce((a,b) => a+b.act,0);
-    return `<div class="grid2">
-      <div class="card2"><h3>Task Completion</h3><div class="donut" style="background:conic-gradient(var(--blue) ${p*3.6}deg,var(--light) 0)"><span>${p}%</span></div></div>
-      <div class="card2"><h3>Category-wise Progress</h3>${CATS.map(c => { const L = T.filter(t => t.cat===c), d = L.filter(t => t.status==='done').length;
-        return `<div style="margin-bottom:10px"><div class="row sm"><span>${c}</span><span>${d}/${L.length}</span></div>${bar(pct(d,L.length),'g')}</div>`; }).join('')}</div>
-      <div class="card2"><h3>Budget Utilization – ${pct(act,S.proj.budget)}%</h3>${bar(Math.min(100,pct(act,S.proj.budget)))}<p class="mute">${inr(act)} spent of ${inr(S.proj.budget)}</p></div>
-      <div class="card2"><h3>Pending Tasks (${T.length-done})</h3><div class="list">${dlist(upcoming().slice(0,6))}</div></div>
-      <div class="card2"><h3>Overdue Tasks (${T.filter(isOd).length})</h3><div class="list">${dlist(T.filter(isOd))}</div></div>
-      <div class="card2"><h3>Upcoming Deadlines</h3><div class="list">${dlist(upcoming().filter(t => !isOd(t)).slice(0,6))}</div></div></div>`;
-  },
-  Settings(){
-    const J = S.proj, pj = P();
-    const roleSel = u => u.sa ? '<span class="sm">Admin everywhere</span>' :
-      `<select onchange="setRole('${esc(u.name)}',this.value)">${['viewer','editor','admin'].map(r => `<option ${(pj.members[u.name] || 'viewer') === r ? 'selected' : ''}>${r}</option>`).join('')}</select>`;
-    return `<div class="card2"><h3>Project details</h3><div class="fg">
-      <label>Project name<input id="s_name" value="${esc(pj.name)}"></label>
-      <label>Project owner<input id="s_owner" value="${esc(J.owner)}"></label>
-      <label>Target<input id="s_target" value="${esc(J.target)}"></label>
-      <label>Total budget (₹)<input id="s_budget" type="number" value="${J.budget}"></label>
-      <label class="w">Location<input id="s_loc" value="${esc(J.location)}"></label>
-      <label class="w">Assignees (comma separated)<input id="s_people" value="${esc(S.people.join(', '))}"></label></div><br>
-      <button class="btn pri" onclick="saveSettings()">Save Settings</button>
-      <button class="btn del" onclick="resetAll()">Reset this project's data</button></div><br>
-    <div class="card2"><h3>Who can do what in this project</h3>
-      <p class="mute">Viewer = read only · Editor = add/edit/move tasks and budget · Admin = also delete tasks and manage settings</p>
-      <div class="list">${DB.users.map(u => `<div><span>${esc(u.name)}${u.sa ? ' (super admin)' : ''}</span>${roleSel(u)}</div>`).join('')}</div></div>
-    ${SA() ? `<br><div class="card2"><h3>Users (super admin)</h3>
-      <div class="list">${DB.users.map(u => `<div><span>${esc(u.name)}</span><span><button class="btn" onclick="setPin('${u.name}')">Set PIN</button>${u.sa ? '' : ` <button class="btn del" onclick="delUser('${u.name}')">Remove</button>`}</span></div>`).join('')}</div>
-      <div class="row" style="margin-top:10px"><input id="nu_n" placeholder="User name" style="flex:1"><input id="nu_p" type="password" placeholder="PIN (min 4)" style="flex:1"><label class="sm"><input type="checkbox" id="nu_sa"> Super admin</label><button class="btn pri" onclick="addUser()">Add User</button></div></div><br>
-    <div class="card2"><h3>Projects (super admin)</h3><div class="row"><input id="np_n" placeholder="New project name" style="flex:1"><button class="btn pri" onclick="addProject()">Create Project</button><button class="btn del" onclick="delProject()">Delete current project</button></div></div>` : ''}`;
-  }
-};
-
-/* ---------- Admin login (PIN) ---------- */
-function drawActs(){
-  const role = isAdm ? 'Admin' : admin ? 'Editor' : 'Viewer';
-  $('#acts').innerHTML = `<span class="badge" id="syncb" style="cursor:pointer" onclick="syncBox()">${esc(syncMsg)}</span><span class="badge">${user ? esc(user.name) + ' · ' : ''}${role}</span>`
-    + `<button class="btn" onclick="exportExcel()">Export Excel</button>`
-    + (isAdm ? `<button class="btn" onclick="$('#impx').click()">Import Excel</button>` : '')
-    + (SA() ? `<button class="btn" onclick="exportData()">Backup JSON</button><button class="btn" onclick="$('#imp').click()">Restore JSON</button>` : '')
-    + (admin ? `<button class="btn pri" onclick="openT()">+ Add Task</button>` : '')
-    + (user ? `<button class="btn" onclick="logout()">Logout</button>` : `<button class="btn pri" onclick="loginBox()">Login</button>`);
-  $('#pname').textContent = P().name; $('#warn').hidden = !!SYNC;
-  $('#psel').innerHTML = DB.projects.map(p => `<option value="${p.id}" ${p.id === DB.cur ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
-}
-function switchP(id){ DB.cur = id; persist(); attach(); setupFilters(); render(); }
-function loginBox(){
-  $('#mbody').innerHTML = `<h3>Login</h3><input id="lnm" placeholder="User name" style="width:100%;margin:6px 0"><input id="pinin" type="password" placeholder="PIN" style="width:100%;margin:6px 0 12px" onkeydown="if(event.key==='Enter')doLogin()"><div class="row"><span></span><span><button class="btn" onclick="closeM()">Cancel</button> <button class="btn pri" onclick="doLogin()">Login</button></span></div>`;
-  $('#modal').hidden = false; $('#lnm').focus();
-}
-function doLogin(){
-  const u = DB.users.find(x => x.name.toLowerCase() === $('#lnm').value.trim().toLowerCase());
-  if (u && u.pin === hs($('#pinin').value)){
-    try { sessionStorage.setItem('mppl_user', u.name); } catch(e){}
-    closeM(); attach(); setupFilters(); render();
-  } else alert('Wrong user name or PIN.');
-}
-function logout(){ user = null; try { sessionStorage.removeItem('mppl_user'); } catch(e){} roles(); render(); }
-
-/* ---------- Live sync between devices (Firebase Realtime Database) ---------- */
-function setSync(m, ok){ syncMsg = (ok === true ? '🟢 ' : ok === false ? '🔴 ' : '⚪ ') + m; const e = $('#syncb'); if (e) e.textContent = syncMsg; }
-const UPD = () => SYNC.replace(/\.json(\?.*)?$/, '/updated.json$1');   // tiny "last saved" value, cheap to check often
-async function getRemote(){
-  const r = await fetch(SYNC, {cache:'no-store'}); if (!r.ok) throw 0;
-  const j = await r.json(); return j && j.blob ? JSON.parse(j.blob) : null;
-}
-async function putDB(){
-  const r = await fetch(SYNC, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({updated:DB.updated || 0, blob:JSON.stringify(DB)})});
-  if (!r.ok) throw 0;
-}
-// Combine two copies so nobody's work is lost: for each task the most recent edit wins; deletions are remembered
-function mergeDB(a, b){
-  if ((a.epoch || 0) !== (b.epoch || 0)){ const w = JSON.parse(JSON.stringify((a.epoch || 0) > (b.epoch || 0) ? a : b)); w.cur = a.cur; return w; }   // after a JSON restore
-  const aNew = (a.updated || 0) >= (b.updated || 0), nw = aNew ? a : b, od = aNew ? b : a;
-  const out = JSON.parse(JSON.stringify(nw)), gp = Object.assign({}, od.goneP, nw.goneP);
-  od.projects.forEach(op => { if (!out.projects.find(p => p.id === op.id)) out.projects.push(JSON.parse(JSON.stringify(op))); });
-  out.projects = out.projects.filter(p => !gp[p.id]);
-  out.projects.forEach(p => {
-    const o = od.projects.find(x => x.id === p.id); if (!o) return;
-    const gone = Object.assign({}, o.data.gone, p.data.gone), map = {};
-    [...o.data.tasks, ...p.data.tasks].forEach(t => { if (!map[t.id] || (t.mod || 0) >= (map[t.id].mod || 0)) map[t.id] = t; });
-    p.data.tasks = Object.values(map).filter(t => !(gone[t.id] && gone[t.id] >= (t.mod || 0)))
-      .sort((x, y) => x.id.localeCompare(y.id, undefined, {numeric:true}));
-    p.data.gone = gone;
-  });
-  out.goneP = gp; out.cur = a.cur; return out;
-}
-function canApply(){ return $('#modal').hidden && !/INPUT|SELECT|TEXTAREA/.test((document.activeElement || {}).tagName || ''); }
-async function sync(){
-  if (!SYNC) return setSync('Not connected');
-  if (busy) return; busy = true;
-  try {
-    if (stale && canApply()){ stale = false; render(); }
-    const ru = await fetch(UPD(), {cache:'no-store'}); if (!ru.ok) throw 0;
-    const remote = await ru.json();
-    if (dirty || remote == null || (DB.updated || 0) > remote){        // this device has changes -> merge with the server copy, then save
-      setSync('Saving…');
-      const rd = remote == null ? null : await getRemote();
-      const m = rd ? mergeDB(DB, rd) : DB; m.updated = Date.now();
-      const changed = JSON.stringify(m.projects) !== JSON.stringify(DB.projects);
-      DB = m; persist(); await putDB(); dirty = false;
-      if (changed){ attach(); setupFilters(); if (canApply()) render(); else stale = true; }
-    } else if (remote > (DB.updated || 0)){                              // someone else saved -> load their changes
-      if (!canApply()){ busy = false; return; }
-      const rd = await getRemote();
-      if (rd){ const m = mergeDB(DB, rd); m.updated = Math.max(DB.updated || 0, rd.updated || 0);
-        dirty = JSON.stringify(m.projects) !== JSON.stringify(rd.projects); DB = m; persist(); attach(); setupFilters(); render(); }
-    }
-    setSync('All changes saved ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), true);
-  } catch(e){ setSync('Offline – will save when back online', false); }
-  busy = false;
-}
-function syncBox(){
-  $('#mbody').innerHTML = `<h3>Shared database (auto-save)</h3><p class="mute">Paste your Firebase Realtime Database URL (once per device, or use the phone link). Leave empty and save to disconnect.</p><input id="sy_u" placeholder="https://your-project-default-rtdb.firebaseio.com/" value="${esc(SYNC)}" style="width:100%"><p class="sm">Status: ${esc(syncMsg)}</p><div class="row"><button class="btn" onclick="copyLink()">Copy phone link</button><span><button class="btn" onclick="closeM()">Close</button> <button class="btn pri" onclick="saveSync()">Save &amp; Connect</button></span></div>`;
-  $('#modal').hidden = false;
-}
-function saveSync(){
-  let u = $('#sy_u').value.trim();
-  if (u){ u = u.replace(/\/+$/, ''); if (!/\.json(\?.*)?$/.test(u)) u += '/mppl.json'; }
-  SYNC = u; try { localStorage.setItem('mppl_sync', u); } catch(e){}
-  closeM(); setSync(u ? 'Connecting…' : 'Sync not connected'); drawActs(); if (u) sync();
-}
-function copyLink(){
-  if (!SYNC) return alert('Save the sync URL first.');
-  const l = location.href.split('#')[0] + '#sync=' + encodeURIComponent(SYNC);
-  (navigator.clipboard ? navigator.clipboard.writeText(l) : Promise.reject()).then(() => alert('Link copied. Open it on your phone.'), () => prompt('Copy this link:', l));
-}
-
-/* ---------- Users, roles and projects (Settings page) ---------- */
-function setRole(n, r){ if (!isAdm) return; P().members[n] = r; save(); }
-function addUser(){
-  if (!SA()) return;
-  const n = $('#nu_n').value.trim().replace(/[^\w -]/g, ''), p = $('#nu_p').value;
-  if (!n || p.length < 4) return alert('Enter a name and a PIN of at least 4 characters.');
-  if (DB.users.some(u => u.name.toLowerCase() === n.toLowerCase())) return alert('User already exists.');
-  DB.users.push({name:n, pin:hs(p), sa:$('#nu_sa').checked}); save(); render();
-}
-function delUser(n){
-  if (!SA() || !confirm('Remove user ' + n + '?')) return;
-  DB.users = DB.users.filter(u => u.name !== n); DB.projects.forEach(p => delete p.members[n]); save(); render();
-}
-function setPin(n){
-  if (!SA()) return;
-  const p = prompt('New PIN for ' + n + ' (min 4 characters)'); if (!p) return;
-  if (p.length < 4) return alert('PIN too short.');
-  DB.users.find(u => u.name === n).pin = hs(p); save(); alert('PIN updated.');
-}
-function addProject(){
-  if (!SA()) return;
-  const n = $('#np_n').value.trim(); if (!n) return;
-  const d = fresh(); d.tasks = []; d.log = []; d.proj = {owner:'', target:'', budget:0, location:'', capacity:''};
-  const id = 'p' + Date.now(); DB.projects.push({id, name:n, members:{}, data:d}); DB.cur = id;
-  save(); attach(); setupFilters(); render();
-}
-function delProject(){
-  if (!SA()) return;
-  if (DB.projects.length < 2) return alert('At least one project must remain.');
-  if (!confirm('Delete project "' + P().name + '" and all its tasks?')) return;
-  (DB.goneP = DB.goneP || {})[DB.cur] = Date.now(); DB.projects = DB.projects.filter(p => p.id !== DB.cur); DB.cur = DB.projects[0].id;
-  save(); attach(); setupFilters(); render();
-}
-
-/* ---------- Excel import / export (SheetJS library) ---------- */
-const nk = s => String(s).toLowerCase().replace(/[^a-z0-9]/g, '');           // "Progress %" -> "progress"
-const pick = (row, names) => { for (const k in row) if (names.includes(nk(k))) return row[k]; return ''; };
-const iso = d => new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10);
-const STMAP = {todo:'todo', notstarted:'todo', inprogress:'prog', prog:'prog', wip:'prog', review:'review', inreview:'review', done:'done', completed:'done', complete:'done'};
-const PRMAP = {high:'H', h:'H', medium:'M', med:'M', m:'M', low:'L', l:'L'};
-function xDate(v){   // Excel date number, Date object or text -> YYYY-MM-DD
-  if (v === '' || v == null) return '';
-  if (typeof v === 'number') return new Date(Math.round((v - 25569) * 864e5)).toISOString().slice(0, 10);
-  if (v instanceof Date) return iso(v);
-  const s = String(v).trim(); let m;
-  if ((m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/))) return m[1] + '-' + m[2].padStart(2, '0') + '-' + m[3].padStart(2, '0');
-  if ((m = s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/))) return m[3] + '-' + m[2].padStart(2, '0') + '-' + m[1].padStart(2, '0');   // dd/mm/yyyy
-  const d = new Date(s); return isNaN(d) ? '' : iso(d);
-}
-function parseSheets(rows, brows, prows){   // turns sheet rows into tasks, budget and project details
-  const bad = [], used = new Set(), tasks = [], explicit = new Set();
-  rows.forEach(r => { const x = String(pick(r, ['taskid', 'id'])).trim(); if (x) explicit.add(x); });
-  let next = 1;
-  const newId = () => { let id; do { id = 'T-' + String(next++).padStart(2, '0'); } while (used.has(id) || explicit.has(id)); return id; };
-  rows.forEach((row, i) => {
-    const title = String(pick(row, ['taskname', 'task', 'title', 'name'])).trim(); if (!title) return;
-    let id = String(pick(row, ['taskid', 'id'])).trim();
-    if (!id || used.has(id)) id = newId();
-    used.add(id);
-    const cr = String(pick(row, ['category', 'cat'])).trim();
-    let cat = CATS.find(c => nk(c) === nk(cr));
-    if (!cat){ cat = CATS[0]; bad.push(`Row ${i + 2}: category "${cr}" not recognised, set to ${cat}`); }
-    const status = STMAP[nk(pick(row, ['status']))] || 'todo';
-    let pg = pick(row, ['progress']); pg = typeof pg === 'string' ? parseFloat(pg) : +pg; if (isNaN(pg)) pg = 0;
-    if (pg > 0 && pg <= 1) pg *= 100;                 // 0.4 (a % cell) -> 40
-    pg = status === 'done' ? 100 : Math.max(0, Math.min(100, Math.round(pg)));
-    const checklist = String(pick(row, ['checklist', 'checklistitems'])).split(/[;\n]/).map(s => s.trim()).filter(Boolean)
-      .map(s => ({t:s.replace(/^\[(x|✓| )\]\s*/i, ''), d:/^\[(x|✓)\]/i.test(s)}));
-    tasks.push(mk({id, title, desc:String(pick(row, ['description', 'desc'])).trim(), cat,
-      as:String(pick(row, ['assignee', 'assignedto'])).trim() || 'Unassigned',
-      pri:PRMAP[nk(pick(row, ['priority']))] || 'M', due:xDate(pick(row, ['duedate', 'due', 'deadline'])),
-      status, progress:pg, checklist, att:String(pick(row, ['attachment', 'attachments'])).trim(),
-      history:[{t:'Imported from Excel', at:now()}]}));
-  });
-  const nm = r => String(pick(r, ['category', 'name'])).trim();
-  const budget = brows.filter(r => nm(r) && (pick(r, ['estimated', 'est']) !== '' || pick(r, ['actual', 'act']) !== ''))
-    .map(r => ({name:nm(r), est:Math.max(0, +pick(r, ['estimated', 'est']) || 0), act:Math.max(0, +pick(r, ['actual', 'act']) || 0)}));
-  const proj = {}; prows.forEach(r => { const k = nk(pick(r, ['field', 'key'])), v = pick(r, ['value']); if (k && v !== '') proj[k] = v; });
-  return {tasks, budget, proj, bad};
-}
-function importExcel(inp){
-  if (!isAdm) return;
-  const f = inp.files[0]; if (!f) return;
-  if (typeof XLSX === 'undefined'){ inp.value = ''; return alert('The Excel library could not load. Check your internet connection and reload the page.'); }
-  const r = new FileReader();
-  r.onload = () => {
-    try {
-      const wb = XLSX.read(r.result, {type:'array'});
-      const rowsOf = n => { const k = wb.SheetNames.find(s => nk(s) === n); return k ? XLSX.utils.sheet_to_json(wb.Sheets[k], {defval:''}) : null; };
-      const rows = rowsOf('tasks'); if (!rows) throw new Error('No sheet named "Tasks" found.');
-      const res = parseSheets(rows, rowsOf('budget') || [], rowsOf('project') || []);
-      if (!res.tasks.length) throw new Error('No tasks found. Check the header row (Task Name, Category, ...).');
-      const warn = res.bad.length ? '\n\nWarnings:\n' + res.bad.slice(0, 8).join('\n') : '';
-      if (!confirm('Import ' + res.tasks.length + ' tasks? This REPLACES all tasks in "' + P().name + '".' + warn)) { inp.value = ''; return; }
-      const ts = Date.now(); S.gone = S.gone || {}; S.tasks.forEach(t => S.gone[t.id] = ts); res.tasks.forEach(t => t.mod = ts + 1);
-      S.tasks = res.tasks;
-      if (res.budget.length) S.budget = res.budget;
-      const J = S.proj, p = res.proj;
-      if (p.owner) J.owner = String(p.owner); if (p.target) J.target = String(p.target);
-      if (p.budget !== undefined) J.budget = +p.budget || J.budget;
-      if (p.location) J.location = String(p.location); if (p.capacity) J.capacity = String(p.capacity);
-      res.tasks.forEach(t => { if (!S.people.includes(t.as)) S.people.push(t.as); });
-      S.log.unshift({t:'Imported ' + res.tasks.length + ' tasks from Excel', at:now()});
-      save(); setupFilters(); render(); alert('Imported ' + res.tasks.length + ' tasks.');
-    } catch(e){ alert('Import failed: ' + (e.message || 'invalid file') + '\n\nUse the MPPL Excel template.'); }
-    inp.value = '';
-  };
-  r.readAsArrayBuffer(f);
-}
-function exportExcel(){
-  if (typeof XLSX === 'undefined') return alert('The Excel library could not load. Check your internet connection and reload the page.');
-  const wb = XLSX.utils.book_new(), J = S.proj;
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(S.tasks.map(t => ({'Task ID':t.id, 'Task Name':t.title, 'Description':t.desc, 'Category':t.cat,
-    'Assignee':t.as, 'Priority':PR[t.pri], 'Due Date':t.due, 'Status':ST[t.status], 'Progress %':t.progress,
-    'Checklist':t.checklist.map(c => (c.d ? '[x] ' : '') + c.t).join('; '), 'Attachment':t.att}))), 'Tasks');
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(S.budget.map(b => ({'Category':b.name, 'Estimated':b.est, 'Actual':b.act}))), 'Budget');
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['Field', 'Value'], ['Owner', J.owner], ['Target', J.target], ['Budget', J.budget], ['Location', J.location], ['Capacity', J.capacity]]), 'Project');
-  XLSX.writeFile(wb, (P().name.replace(/[^\w -]/g, '') || 'project') + '.xlsx');
-}
-
-/* ---------- 7. Rendering & navigation ---------- */
-function render(){
-  if (view === 'Settings' && !isAdm) view = 'Dashboard';
-  document.body.classList.toggle('viewer', !admin); drawActs();
-  $('#ttl').textContent = view;
-  $('#nav').innerHTML = VIEWS.filter(v => isAdm || v !== 'Settings').map(v => `<button class="${v===view?'on':''}" onclick="go('${v}')">${v}</button>`).join('');
-  $('#filters').hidden = !['Kanban Board','Tasks'].includes(view);
-  $('#view').innerHTML = PAGES[view]();
-}
-function go(v){ view = v; setupFilters(); render(); }
-
-/* ---------- 8. Drag and drop (Kanban) ---------- */
-document.addEventListener('dragstart', e => { const c = e.target.closest && e.target.closest('.tc'); if (c) e.dataTransfer.setData('text/plain', c.dataset.id); });
-document.addEventListener('dragover', e => { const c = e.target.closest && e.target.closest('.col'); if (c){ e.preventDefault(); c.classList.add('over'); } });
-document.addEventListener('dragleave', e => { const c = e.target.closest && e.target.closest('.col'); if (c) c.classList.remove('over'); });
-document.addEventListener('drop', e => {
-  const c = e.target.closest && e.target.closest('.col'); if (!c || !admin) return;
-  e.preventDefault();
-  const t = S.tasks.find(x => x.id === e.dataTransfer.getData('text/plain'));
-  if (t && t.status !== c.dataset.s){
-    t.status = c.dataset.s;
-    if (t.status === 'done') t.progress = 100;
-    log(t, 'Status changed to ' + ST[t.status]);
-    save();
-  }
-  render();
-});
-
-/* ---------- 9. Add / Edit task popup ---------- */
-let cur = null, orig = null;
-const opts = (obj, sel) => Object.entries(obj).map(([k,v]) => `<option value="${k}" ${k===sel?'selected':''}>${v}</option>`).join('');
-function nextId(){ return 'T-' + String(Math.max(0, ...S.tasks.map(t => +t.id.slice(2))) + 1).padStart(2,'0'); }
-
-function openT(id){
-  if (!id && !admin) return;
-  orig = id ? S.tasks.find(t => t.id === id) : null;
-  cur = JSON.parse(JSON.stringify(orig || mk({id:nextId(), title:'', cat:CATS[0], due:today(), pri:'M', history:[]})));
-  const people = [...new Set([...S.people, cur.as])];
-  $('#mbody').innerHTML = `<div class="row"><h3>${orig ? cur.id+(admin?' – Edit Task':' – Details') : 'Add Task'}</h3><button class="btn" data-keep="1" onclick="closeM()">✕</button></div>
-  <div class="fg">
-    <label class="w">Task name<input id="f_title" value="${esc(cur.title)}"></label>
-    <label class="w">Description<textarea id="f_desc" rows="2">${esc(cur.desc)}</textarea></label>
-    <label>Category<select id="f_cat">${CATS.map(c => `<option ${c===cur.cat?'selected':''}>${c}</option>`).join('')}</select></label>
-    <label>Assignee<input id="f_as" list="plist" value="${esc(cur.as)}"><datalist id="plist">${people.map(p => `<option value="${esc(p)}">`).join('')}</datalist></label>
-    <label>Priority<select id="f_pr">${opts(PR, cur.pri)}</select></label>
-    <label>Due date<input id="f_due" type="date" value="${cur.due}"></label>
-    <label>Status<select id="f_st">${opts(ST, cur.status)}</select></label>
-    <label>Progress: <b id="pgv">${cur.progress}%</b><input id="f_pg" type="range" min="0" max="100" step="5" value="${cur.progress}" oninput="$('#pgv').textContent=this.value+'%'"></label>
-    <label class="w">Attachment name<input id="f_att" placeholder="e.g. vendor-quotation.pdf" value="${esc(cur.att)}"></label>
-  </div>
-  <h3 style="margin-top:16px">Checklist</h3><div id="cl"></div>
-  <div class="row" style="margin:6px 0"><input id="ci" placeholder="Add checklist item" style="flex:1" onkeydown="if(event.key==='Enter')addCi()"><button class="btn" onclick="addCi()">Add</button></div>
-  <h3 style="margin-top:16px">Comments</h3>
-  <div class="row" style="margin-bottom:6px"><input id="cmi" placeholder="Write a comment" style="flex:1" onkeydown="if(event.key==='Enter')addCm()"><button class="btn" onclick="addCm()">Post</button></div><div id="cm" class="list"></div>
-  ${orig ? '<h3 style="margin-top:16px">Activity</h3><div id="hs" class="list"></div>' : ''}
-  <div class="row" style="margin-top:18px">${orig ? `<button class="btn del adm" ${isAdm ? '' : 'style="display:none"'} onclick="delT()">Delete Task</button>` : '<span></span>'}<span><button class="btn" data-keep="1" onclick="closeM()">Cancel</button> <button class="btn pri adm" onclick="saveT()">Save Task</button></span></div>`;
-  subs();
-  if (!admin) $('#mbody').querySelectorAll('input,select,textarea,button').forEach(e => { if (!e.dataset.keep) e.disabled = true; });
-  $('#modal').hidden = false;
-}
-function subs(){ // redraw checklist / comments / history without touching the form fields
-  $('#cl').innerHTML = cur.checklist.map((c,i) => `<div class="chk ${c.d?'d':''}"><input type="checkbox" ${c.d?'checked':''} onchange="cur.checklist[${i}].d=this.checked;subs()"><span style="flex:1">${esc(c.t)}</span><button class="btn" onclick="cur.checklist.splice(${i},1);subs()">✕</button></div>`).join('') || '<p class="mute">No items yet.</p>';
-  $('#cm').innerHTML = cur.comments.map(c => `<div><span>${esc(c.t)}</span><span class="sm">${c.at}</span></div>`).join('');
-  if ($('#hs')) $('#hs').innerHTML = cur.history.map(h => `<div><span>${esc(h.t)}</span><span class="sm">${h.at}</span></div>`).join('');
-}
-function addCi(){ const v = $('#ci').value.trim(); if (v){ cur.checklist.push({t:v, d:false}); subs(); $('#ci').value=''; $('#ci').focus(); } }
-function addCm(){ const v = $('#cmi').value.trim(); if (v){ cur.comments.unshift({t:v, at:now()}); subs(); $('#cmi').value=''; } }
-function closeM(){ $('#modal').hidden = true; }
-
-function saveT(){ if (!admin) return;
-  const v = id => $('#'+id).value;
-  if (!v('f_title').trim()) return alert('Please enter a task name.');
-  const n = Object.assign(cur, {title:v('f_title').trim(), desc:v('f_desc'), cat:v('f_cat'), as:v('f_as').trim() || 'Unassigned',
-    pri:v('f_pr'), due:v('f_due'), status:v('f_st'), progress:+v('f_pg'), att:v('f_att')});
-  if (n.status === 'done') n.progress = 100;
-  n.mod = Date.now();
-  if (!orig){
-    n.history = [{t:'Task created', at:now()}];
-    S.tasks.push(n);
-    S.log.unshift({t:n.id+' · Task created', at:now()});
-  } else {
-    if (orig.status !== n.status) log(n, 'Status changed to ' + ST[n.status]);
-    if (orig.pri !== n.pri) log(n, 'Priority changed to ' + PR[n.pri]);
-    if (orig.as !== n.as) log(n, 'Assignee changed to ' + n.as);
-    if (orig.due !== n.due) log(n, 'Due date updated');
-    if (orig.progress !== n.progress) log(n, 'Progress updated to ' + n.progress + '%');
-    if (n.comments.length > orig.comments.length) log(n, 'Comment added');
-    { const ix = S.tasks.findIndex(t => t.id === orig.id); if (ix >= 0) S.tasks[ix] = n; else S.tasks.push(n); }
-  }
-  save(); closeM(); setupFilters(); render();
-}
-function delT(){ if (!isAdm) return;
-  if (!confirm('Delete ' + orig.id + '?')) return;
-  (S.gone = S.gone || {})[orig.id] = Date.now();                       // remember the deletion so it spreads to other devices
-  { const ix = S.tasks.findIndex(t => t.id === orig.id); if (ix >= 0) S.tasks.splice(ix, 1); }
-  S.log.unshift({t:orig.id+' · Task deleted', at:now()});
-  save(); closeM(); render();
-}
-
-/* ---------- 10. Budget, settings, export / import ---------- */
-function setB(i, k, v){ if (!admin) return; S.budget[i][k] = Math.max(0, +v || 0); save(); render(); }
-function saveSettings(){ if (!isAdm) return;
-  S.proj.owner = $('#s_owner').value; S.proj.target = $('#s_target').value;
-  S.proj.budget = +$('#s_budget').value || 0; S.proj.location = $('#s_loc').value;
-  S.people = $('#s_people').value.split(',').map(s => s.trim()).filter(Boolean);
-  P().name = $('#s_name').value.trim() || P().name;
-  save(); setupFilters(); render(); alert('Settings saved.');
-}
-function resetAll(){ if (!isAdm) return; if (confirm('Reset everything to the starting 26 tasks?')){ { const g = {}, ts = Date.now(); S.tasks.forEach(t => g[t.id] = ts); const d = fresh(); d.gone = g; d.tasks.forEach(t => t.mod = ts + 1); setS(d); } save(); setupFilters(); render(); } }
-function exportData(){ if (!SA()) return;
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([JSON.stringify(DB, null, 2)], {type:'application/json'}));
-  a.download = 'data.json';
-  a.click();
-}
-function importData(inp){ if (!SA()) return;
-  const f = inp.files[0]; if (!f) return;
-  const r = new FileReader();
-  r.onload = () => {
-    try {
-      const d = JSON.parse(r.result);
-      if (d.projects && d.users){ const ep = Math.max(DB.epoch || 0, d.epoch || 0) + 1; DB = d; DB.epoch = ep; attach(); }
-      else if (Array.isArray(d.tasks) && Array.isArray(d.budget)) setS(Object.assign(fresh(), d));
-      else throw 0;
-      save(); setupFilters(); render(); alert('Data imported.');
-    } catch(e){ alert('Invalid file. Please choose a JSON exported from this app.'); }
-    inp.value = '';
-  };
-  r.readAsText(f);
-}
-$('#modal').addEventListener('click', e => { if (e.target.id === 'modal') closeM(); });
-
-/* ---------- 11. Start ---------- */
-async function boot(){
-  try {   // when hosted online, use the newest data.json published next to this page
-    if (!SYNC && location.protocol.indexOf('http') === 0){
-      const r = await fetch('data.json?t=' + Date.now());
-      if (r.ok){ const d = await r.json(); if (d.projects && d.users && (d.updated || 0) > (DB.updated || 0)){ DB = d; persist(); } }
-    }
-  } catch(e){}
-  attach(); setupFilters(); render();
-  sync(); setInterval(() => { if (!document.hidden) sync(); }, 3000);   // check for changes every 3 seconds
-  window.addEventListener('focus', sync);
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) sync(); });
-}
+/* ---------- ADMIN ---------- */
+const TABS=[['d','Dashboard'],['s','Sections & Videos'],['q','Questions'],['c','Certificate'],['x','Settings']];
+function adminV(u){if(!S.d)S.d=JSON.parse(JSON.stringify(C()));const D=S.d;let b='';
+ if(S.tab==='d')b=dashV();
+ if(S.tab==='s')b=`<p class="mu">Paste the Google Drive share link for each video. In Drive: right-click video → Share → General access: <b>Anyone with the link</b> → Copy link. YouTube (unlisted) and direct .mp4 links also work. "Minimum minutes" is how long the learner must stay on the section before it can be marked complete (set it to the video length).</p>`+
+  D.sections.map((s,i)=>`<div class="ed"><div class="row"><b>Section ${i+1}</b><span style="flex:1"></span><button class="btn s sm" onclick="mv('sections',${i},-1)">↑</button><button class="btn s sm" onclick="mv('sections',${i},1)">↓</button><button class="btn d sm" onclick="del('sections',${i})">Delete</button></div>
+  <label class="l">Title</label><input value="${esc(s.title)}" oninput="S.d.sections[${i}].title=this.value">
+  <label class="l">Description</label><input value="${esc(s.desc)}" oninput="S.d.sections[${i}].desc=this.value">
+  <div class="g2"><div><label class="l">Video link (Google Drive)</label><input value="${esc(s.src)}" placeholder="https://drive.google.com/file/d/.../view" oninput="S.d.sections[${i}].src=this.value"></div>
+  <div><label class="l">Minimum minutes to complete</label><input type="number" min="1" value="${s.mins||1}" oninput="S.d.sections[${i}].mins=+this.value"></div></div></div>`).join('')+
+  `<button class="btn s" onclick="add('sections')">+ Add section</button> <button class="btn" onclick="saveD()">Save changes</button>`;
+ if(S.tab==='q')b=`<p class="mu">Enter the question, four options, and choose the correct answer. Pass mark is set under Settings.</p>`+
+  D.questions.map((q,i)=>`<div class="ed"><div class="row"><b>Question ${i+1}</b><span style="flex:1"></span><button class="btn s sm" onclick="mv('questions',${i},-1)">↑</button><button class="btn s sm" onclick="mv('questions',${i},1)">↓</button><button class="btn d sm" onclick="del('questions',${i})">Delete</button></div>
+  <input value="${esc(q.q)}" placeholder="Question text" oninput="S.d.questions[${i}].q=this.value">
+  <div class="g2">${[0,1,2,3].map(j=>`<input value="${esc(q.o[j]||'')}" placeholder="Option ${'ABCD'[j]}" oninput="S.d.questions[${i}].o[${j}]=this.value">`).join('')}</div>
+  <label class="l">Correct answer</label><select onchange="S.d.questions[${i}].a=+this.value">${[0,1,2,3].map(j=>`<option value="${j}" ${q.a===j?'selected':''}>Option ${'ABCD'[j]}</option>`).join('')}</select></div>`).join('')+
+  `<button class="btn s" onclick="add('questions')">+ Add question</button> <button class="btn" onclick="saveD()">Save changes</button>`;
+ if(S.tab==='c'){const k=D.cert,f=(l,key,ta)=>`<label class="l">${l}</label>${ta?`<textarea rows="3" onchange="S.d.cert.${key}=this.value;render()">${esc(k[key])}</textarea>`:`<input value="${esc(k[key])}" onchange="S.d.cert.${key}=this.value;render()">`}`;
+  b=`<p class="mu">Certificate is issued automatically when a learner completes all sections and passes the assessment. In the text you can use <b>{course}</b> and <b>{score}</b>.</p>
+  <div class="g2"><div>${f('Organisation name','org')}${f('Heading','title')}${f('Line above name','sub')}${f('Main text','body',1)}${f('Signatory name / title','sign')}${f('Designation','desig')}${f('Footer note','footer')}
+  <label class="l">Theme colour</label><input type="color" value="${esc(k.color)}" onchange="S.d.cert.color=this.value;render()" style="height:44px">
+  <label class="l">Logo (PNG/JPG, under 300 KB)</label><input type="file" accept="image/*" onchange="logo(this)">${k.logo?'<button class="btn s sm" onclick="S.d.cert.logo=\'\';render()">Remove logo</button>':''}</div>
+  <div><b>Live preview</b>${certHTML(D,'Sample Employee Name',{id:'MPPL-2026-ABC123',date:Date.now(),score:90},'EMP001')}</div></div><br><button class="btn" onclick="saveD()">Save changes</button>`}
+ if(S.tab==='x')b=`<div class="g2"><div><label class="l">Course name</label><input value="${esc(D.course)}" oninput="S.d.course=this.value"><label class="l">Pass mark (%)</label><input type="number" min="1" max="100" value="${D.passMark}" oninput="S.d.passMark=+this.value">
+  <button class="btn" onclick="saveD()">Save changes</button></div><div><b>Backup</b><p class="mu">Course data is stored in this browser. Export a backup file, or import one on another computer.</p>
+  <button class="btn s" onclick="expC()">Export course</button> <input type="file" accept=".json" onchange="impC(this)" style="margin-top:10px"><hr><button class="btn s" onclick="chPw()">Change admin password</button></div></div>`;
+ return hdr(u.name)+`<div style="max-width:1200px;margin:20px auto;padding:0 16px"><h2 style="color:var(--navy);margin-bottom:0">Admin Panel</h2><div class="tabs">${TABS.map(([k,l])=>`<button class="${S.tab===k?'on':''}" onclick="S.tab='${k}';render()">${l}</button>`).join('')}</div><div class="main">${b}</div></div>`}
+function dashV(){const us=U(),pr=P();let rows='',done=0,prog=0,none=0;
+ Object.entries(us).filter(([k,v])=>v.role!=='admin').forEach(([id,v])=>{const s=stat(id),ce=pr[id]?.cert,b=Math.max(0,...(pr[id]?.tries||[]).map(t=>t.score));
+  if(ce)done++;else if(s.n)prog++;else none++;
+  rows+=`<tr><td>${esc(id)}</td><td>${esc(v.name)}</td><td>${s.n}/${s.t}</td><td>${pr[id]?.tries?.length?b+'%':'–'}</td><td><span class="tag ${ce?'t1':s.n?'t2':'t3'}">${ce?'Certified':s.n?'In progress':'Not started'}</span></td><td>${ce?new Date(ce.date).toLocaleDateString():'–'}</td>
+  <td><button class="btn s sm" onclick="resetPw('${esc(id)}')">Reset pwd</button> <button class="btn s sm" onclick="resetPr('${esc(id)}')">Reset progress</button> <button class="btn d sm" onclick="delU('${esc(id)}')">Delete</button></td></tr>`});
+ return `<div class="cards" style="margin-top:0"><div class="card"><b>${done+prog+none}</b>Total learners</div><div class="card"><b style="color:var(--ok)">${done}</b>Completed &amp; certified</div><div class="card"><b>${prog}</b>In progress</div><div class="card"><b>${none}</b>Not started</div></div>
+ <div class="row"><b style="flex:1">Learner progress</b><button class="btn s sm" onclick="csv()">Export CSV</button></div><div style="overflow:auto"><table><tr><th>User ID</th><th>Name</th><th>Sections</th><th>Best score</th><th>Status</th><th>Certified on</th><th>Actions</th></tr>${rows||'<tr><td colspan=7 class="mu">No learners yet.</td></tr>'}</table></div>
+ <hr style="margin:20px 0;border:0;border-top:1px solid var(--bd)"><b>Add learners</b> <span class="mu">– one per line: userid,full name,password (min 6 characters)</span>
+ <textarea id="bulk" rows="4" placeholder="emp001,Ravi Kumar,Pass@123&#10;emp002,Priya S,Pass@456" style="margin-top:8px"></textarea><button class="btn" onclick="addU()">Add learners</button>`}
+function add(a){S.d[a].push(a==='sections'?{id:'s'+Date.now(),title:'New section',desc:'',src:'',mins:5}:{q:'',o:['','','',''],a:0});render()}
+function del(a,i){if(S.d[a].length<2)return toast('At least one is required');if(confirm('Delete?')){S.d[a].splice(i,1);render()}}
+function mv(a,i,d){const j=i+d,A=S.d[a];if(j<0||j>=A.length)return;[A[i],A[j]]=[A[j],A[i]];render()}
+function saveD(){const D=S.d;if(D.questions.some(q=>!q.q.trim()||!q.o[D.questions.indexOf(q)>-1?q.a:0]?.trim()))return toast('Fill all questions and the correct option');
+ if(D.sections.some(s=>!s.title.trim()))return toast('Every section needs a title');W('mp_cfg',D);toast('Saved ✓')}
+function logo(el){const f=el.files[0];if(!f)return;if(f.size>3e5)return toast('Logo too large (max 300 KB)');const r=new FileReader();r.onload=()=>{S.d.cert.logo=r.result;render()};r.readAsDataURL(f)}
+function expC(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S.d,null,1)],{type:'application/json'}));a.download='course-backup.json';a.click()}
+function impC(el){const f=el.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const c=JSON.parse(r.result);if(!c.sections||!c.questions)throw 0;S.d={...DEF,...c,cert:{...DEF.cert,...c.cert}};toast('Imported – click Save changes');render()}catch(e){toast('Invalid file')}};r.readAsText(f)}
+async function addU(){const u=U();let n=0;for(const l of bulk.value.split('\n')){const [id,nm,pw]=l.split(',').map(x=>x?.trim());if(!id||!nm||!pw||pw.length<6||u[id.toLowerCase()])continue;u[id.toLowerCase()]={name:nm,role:'user',h:await H(pw)};n++}
+ W('mp_users',u);toast(n+' learner(s) added');render()}
+async function resetPw(id){const p=prompt('New password for '+id+' (min 6):');if(!p||p.length<6)return;const u=U();u[id].h=await H(p);W('mp_users',u);toast('Password reset')}
+function resetPr(id){if(!confirm('Reset all progress for '+id+'?'))return;const a=P();delete a[id];W('mp_prog',a);render()}
+function delU(id){if(!confirm('Delete '+id+'?'))return;const u=U(),a=P();delete u[id];delete a[id];W('mp_users',u);W('mp_prog',a);render()}
+async function chPw(){const p=prompt('New admin password (min 8):');if(!p||p.length<8)return toast('Too short');const u=U();u.admin.h=await H(p);W('mp_users',u);toast('Password changed')}
+function csv(){const us=U(),pr=P(),L=[['UserID','Name','Sections done','Best score','Status','Certificate ID','Certified on']];
+ Object.entries(us).filter(([k,v])=>v.role!=='admin').forEach(([id,v])=>{const s=stat(id),ce=pr[id]?.cert;L.push([id,v.name,s.n+'/'+s.t,Math.max(0,...(pr[id]?.tries||[]).map(t=>t.score)),ce?'Certified':s.n?'In progress':'Not started',ce?.id||'',ce?new Date(ce.date).toLocaleDateString():''])});
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([L.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')).join('\n')],{type:'text/csv'}));a.download='training-report.csv';a.click()}
 boot();
-
 </script>
 </body>
 </html>
