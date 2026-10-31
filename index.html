@@ -59,34 +59,40 @@ async function H(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder
 let USERS={},CSVERR='';
 /* ===== SYNC: paste your Google Apps Script Web App URL between the quotes (see setup steps) ===== */
 const SYNC='https://script.google.com/macros/s/AKfycbx5SqMo2hrgbv0EEpWTBCJMuRGVZG-UK5FOSqgz4NAFYlZMACqZMPTGWVqBSb3UGnYa/exec';
-async function api(m,b){const r=await fetch(m==='GET'?SYNC+'?'+new URLSearchParams(b):SYNC,m==='GET'?{}:{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(b)});return r.json()}
-function akey(){let k=sessionStorage.getItem('mp_k');if(!k){k=prompt('Enter Admin Sync Key');if(k)sessionStorage.setItem('mp_k',k)}return k}
+async function api(m,b){const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),12000);try{const o=m==='GET'?{signal:ac.signal}:{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(b),signal:ac.signal};const r=await fetch(m==='GET'?SYNC+'?'+new URLSearchParams(b):SYNC,o);return await r.json()}finally{clearTimeout(tm)}}
+function akey(){return sessionStorage.getItem('mp_k')||null}
+function saveKey(){const v=(document.getElementById('akin')||{}).value;if(!v||!v.trim())return toast('Enter the key');sessionStorage.setItem('mp_k',v.trim());S.all=null;render()}
 async function pullProg(){if(!SYNC||!S.u||USERS[S.u]?.role==='admin')return;
  try{const r=await api('GET',{a:'prog',u:S.u});if(r&&r.done){const a=P(),l=a[S.u]||{done:{}};if((r.retrain||0)>(l.retrain||0)){a[S.u]=r;localStorage.setItem('mp_prog',JSON.stringify(a));return}const m={...l,...r};m.history=r.history||l.history;m.done={...r.done,...l.done};m.watch={...(r.watch||{}),...(l.watch||{})};
   const t={};[...(l.tries||[]),...(r.tries||[])].forEach(x=>t[x.date]=x);m.tries=Object.values(t);m.cert=l.cert||r.cert;a[S.u]=m;localStorage.setItem('mp_prog',JSON.stringify(a))}}catch(e){}}
 let pt, syncBusy=false, syncAgain=false;
+function setSync(ok){let b=document.getElementById('syncb');if(!b){b=document.createElement('div');b.id='syncb';b.style.cssText='position:fixed;right:10px;bottom:10px;padding:6px 12px;border-radius:14px;font:600 12px sans-serif;z-index:99;color:#fff';document.body.append(b)}
+ if(!S.u||USERS[S.u]?.role==='admin'){b.style.display='none';return}b.style.display='block';b.textContent=ok?'Synced ✓':'Not synced – retrying…';b.style.background=ok?'#1a7f4b':'#c0392b'}
+function flushDirty(){if(SYNC&&S.u&&localStorage.getItem('mp_dirty')===S.u&&!syncBusy)pushProg()}
 function pushProg(){
  if(!SYNC||!S.u||USERS[S.u]?.role==='admin')return;
+ localStorage.setItem('mp_dirty',S.u);setSync(false);
  clearTimeout(pt);
  pt=setTimeout(async()=>{
   if(syncBusy){syncAgain=true;return} syncBusy=true;
-  try{const r=await api('POST',{a:'prog',u:S.u,d:P()[S.u]});if(r&&r.error)toast('Sync rejected – please contact Admin');else if(r&&r.stale)await pullProg();}
-  catch(e){toast('Connection issue – progress is saved on this device and will retry')}
+  try{const r=await api('POST',{a:'prog',u:S.u,d:P()[S.u]});if(r&&r.error)toast('Sync rejected – please contact Admin');else{if(r&&r.stale)await pullProg();localStorage.removeItem('mp_dirty');setSync(true)}}
+  catch(e){setSync(false)}
   finally{syncBusy=false;if(syncAgain){syncAgain=false;pushProg()}}
  },150);
 }
 async function syncLearner(){
  if(!SYNC||!S.u||USERS[S.u]?.role==='admin'||document.visibilityState!=='visible')return;
+ if(localStorage.getItem('mp_dirty')===S.u){flushDirty();return}
  const before=JSON.stringify(P()[S.u]||{}); await pullProg();
  const after=JSON.stringify(P()[S.u]||{});
  if(before!==after&&S.u){const u=U()[S.u];if(u){$a(learnerV(u));if(typeof S.cur==='number')mountMedia()}}
 }
-async function pullAll(){if(!SYNC)return;const k=akey();if(!k)return;try{const r=await api('GET',{a:'all',key:k});if(r.error){sessionStorage.removeItem('mp_k');return toast('Wrong sync key')}S.all=r}catch(e){toast('Could not reach server')}}
+async function pullAll(){if(!SYNC)return;const k=akey();if(!k)return;try{const r=await api('GET',{a:'all',key:k});if(r.error){sessionStorage.removeItem('mp_k');toast('Wrong sync key');render();return}S.all=r}catch(e){toast('Could not reach server – check internet and tap Refresh')}}
 let adminRefreshing=false;
 async function refreshAdmin(){
  if(!SYNC||!S.u||USERS[S.u]?.role!=='admin'||S.tab!=='d'||adminRefreshing||document.visibilityState!=='visible')return;
  adminRefreshing=true;
- try{const k=sessionStorage.getItem('mp_k')||akey();if(!k)return;const r=await api('GET',{a:'all',key:k});if(r.error){sessionStorage.removeItem('mp_k');toast('Wrong sync key');return}
+ try{const k=akey();if(!k)return;const r=await api('GET',{a:'all',key:k});if(r.error){sessionStorage.removeItem('mp_k');toast('Wrong sync key');return}
  const changed=JSON.stringify(r)!==JSON.stringify(S.all||{});S.all=r;
  if(changed){const box=document.querySelector('.main');if(box)box.innerHTML=dashV()}
  }catch(e){}finally{adminRefreshing=false}
@@ -105,8 +111,9 @@ async function boot(){try{const res=await fetch('users.csv?'+Date.now(),{cache:'
   parseCSV(await res.text()).slice(1).forEach(r=>{const id=(r[0]||'').trim().toLowerCase();if(id&&r[2])USERS[id]={name:(r[1]||id).trim(),pw:r[2].trim(),role:(r[3]||'user').trim().toLowerCase()==='admin'?'admin':'user'}});
   if(!Object.keys(USERS).length)throw 0}
  catch(e){CSVERR='users.csv not found or empty. Upload it to the same folder as index.html and open the site via GitHub Pages (not by double-clicking the file).'}
- if(SYNC){try{const c=await api('GET',{a:'cfg'});if(c&&c.sections)localStorage.setItem('mp_cfg',JSON.stringify(c))}catch(e){}await pullProg()}
  render();
+ if(SYNC){(async()=>{try{const c=await api('GET',{a:'cfg'});if(c&&c.sections)localStorage.setItem('mp_cfg',JSON.stringify(c))}catch(e){}
+  await pullProg();if(S.u&&USERS[S.u]?.role!=='admin'){flushDirty();render()}})()}
  if(SYNC){clearInterval(S.syncTimer);S.syncTimer=setInterval(()=>{if(!S.u)return;if(USERS[S.u]?.role==='admin')refreshAdmin();else syncLearner()},4000);
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&S.u){if(USERS[S.u]?.role==='admin')refreshAdmin();else syncLearner()}})}
 }
@@ -128,7 +135,7 @@ function loginV(){return `<div class="login"><div class="hero"><div class="logo"
 async function login(e){e.preventDefault();const er=document.getElementById('er');
  if(Date.now()<S.lock)return er.textContent='Too many attempts. Wait '+Math.ceil((S.lock-Date.now())/1000)+'s.';
  const id=uid.value.trim().toLowerCase(),u=U()[id];
- if(u&&await okPw(u,pw.value)){S.u=id;S.fail=0;S.cur=0;S.tab='d';S.d=null;S.all=null;sessionStorage.setItem('mp_s',id);await pullProg();render()}
+ if(u&&await okPw(u,pw.value)){S.u=id;S.fail=0;S.cur=0;S.tab='d';S.d=null;S.all=null;sessionStorage.setItem('mp_s',id);await pullProg();render();flushDirty()}
  else{if(++S.fail>=5){S.lock=Date.now()+30000;S.fail=0}er.textContent='Invalid User ID or password.'}}
 function logout(){clearInterval(S.syncTimer);S.u=null;S.d=null;sessionStorage.removeItem('mp_s');render()}
 
@@ -212,6 +219,7 @@ function adminV(u){if(!S.d)S.d=JSON.parse(JSON.stringify(C()));const D=S.d;let b
   <textarea id="hin" rows="5" placeholder="userid,username,password,role&#10;admin,Administrator,Admin@123,admin"></textarea><button class="btn s" onclick="hashCsv()">Convert &amp; download users.csv</button></div></div>`;
  return hdr(u.name)+`<div style="max-width:1200px;margin:20px auto;padding:0 16px"><h2 style="color:var(--navy);margin-bottom:0">Admin Panel</h2><div class="tabs">${TABS.map(([k,l])=>`<button class="${S.tab===k?'on':''}" onclick="S.tab='${k}';render()">${l}</button>`).join('')}</div><div class="main">${b}</div></div>`}
 function dashV(){const us=U(),pr=S.all||P();let rows='',done=0,prog=0,none=0;
+ if(SYNC&&!akey())return `<div style="max-width:420px"><h3 style="color:var(--navy)">Enter Admin Sync Key</h3><p class="mu">This key lets the dashboard read learner progress from the server.</p><input id="akin" type="password" placeholder="Admin Sync Key" autocomplete="off"><button class="btn" style="margin-top:10px" onclick="saveKey()">Open dashboard</button></div>`;
  Object.entries(us).filter(([k,v])=>v.role!=='admin').forEach(([id,v])=>{const s=stat(id,pr),ce=pr[id]?.cert,b=Math.max(0,...(pr[id]?.tries||[]).map(t=>t.score));
   if(ce)done++;else if(s.n)prog++;else none++;
   rows+=`<tr><td>${esc(id)}</td><td>${esc(v.name)}</td><td>${s.n}/${s.t}</td><td>${pr[id]?.tries?.length?b+'%':'–'}</td><td><span class="tag ${ce?'t1':s.n?'t2':'t3'}">${ce?'Certified':s.n?'In progress':'Not started'}</span>${pr[id]?.history?.length?`<br><small class="mu">Previous completions: ${pr[id].history.length}</small>`:''}</td><td>${ce?new Date(ce.date).toLocaleDateString():'–'}</td>
@@ -233,6 +241,7 @@ function impC(el){const f=el.files[0];if(!f)return;const r=new FileReader();r.on
 
 
 async function retrain(ids){if(!ids.length)return toast('No learners');
+ if(SYNC&&!akey())return toast('Enter the Admin Sync Key on the dashboard first');
  if(!confirm(ids.length>1?`Restart training from Section 1 for ALL ${ids.length} learners? Current progress and certificates will be cleared (past completions are kept in history).`:`Restart training for ${ids[0]} from Section 1? Current progress and certificate will be cleared (kept in history).`))return;
  const base=S.all||P(),l=P(),t=Date.now();
  for(const id of ids){const o=base[id]||{},n={done:{},tries:[],watch:{},retrain:t,history:[...(o.history||[]),...(o.cert?[{cert:o.cert}]:[])]};l[id]=n;
