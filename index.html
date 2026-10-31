@@ -58,7 +58,8 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 async function H(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('mpl|'+s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
 let USERS={},CSVERR='';
 /* ===== SYNC: paste your Google Apps Script Web App URL between the quotes (see setup steps) ===== */
-const SYNC='https://script.google.com/macros/s/AKfycby0vjFjYbA86FQshbXfFXrnBtOptGAy7aVSMIK7rzPjq8LM9gcvAr_bsb5Ms6hTkpCs/exec';
+const SYNC_URL='https://script.google.com/macros/s/AKfycbzMara-VFoOGfNFs8Of7wfdfq1QKTCxS64pnjp_tfpnHlfLTAvWEMmeZWCIYyiRAGtx/exec';   // <-- paste your Apps Script Web App URL (ends with /exec)
+const SYNC=/^https:\/\//.test(SYNC_URL)?SYNC_URL:'';
 async function api(m,b){const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),12000);try{const o=m==='GET'?{signal:ac.signal}:{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(b),signal:ac.signal};const r=await fetch(m==='GET'?SYNC+'?'+new URLSearchParams(b):SYNC,o);return await r.json()}finally{clearTimeout(tm)}}
 function akey(){return sessionStorage.getItem('mp_k')||null}
 function saveKey(){const v=(document.getElementById('akin')||{}).value;if(!v||!v.trim())return toast('Enter the key');sessionStorage.setItem('mp_k',v.trim());S.all=null;render()}
